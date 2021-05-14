@@ -1,4 +1,4 @@
-﻿namespace EdgeCheckDwg
+﻿namespace EdgeAutocadPlugins
 {
     partial class GenEmiForm
     {
@@ -30,6 +30,11 @@
         {
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(GenEmiForm));
             this.groupBox1 = new System.Windows.Forms.GroupBox();
+            this.radioButton1 = new System.Windows.Forms.RadioButton();
+            this.radioButton3 = new System.Windows.Forms.RadioButton();
+            this.auditCheckBox = new System.Windows.Forms.CheckBox();
+            this.pubblicaCheckbox = new System.Windows.Forms.CheckBox();
+            this.arasExcelCheckbox = new System.Windows.Forms.CheckBox();
             this.pdfCheckbox = new System.Windows.Forms.CheckBox();
             this.labelChooseFolder = new System.Windows.Forms.Label();
             this.chooseFolder = new System.Windows.Forms.Button();
@@ -37,14 +42,12 @@
             this.listaRadio = new System.Windows.Forms.RadioButton();
             this.button2 = new System.Windows.Forms.Button();
             this.groupBox2 = new System.Windows.Forms.GroupBox();
+            this.label1 = new System.Windows.Forms.Label();
             this.rO = new System.Windows.Forms.RadioButton();
             this.radioButton2 = new System.Windows.Forms.RadioButton();
             this.progressBar1 = new System.Windows.Forms.ProgressBar();
-            this.arasExcelCheckbox = new System.Windows.Forms.CheckBox();
-            this.label1 = new System.Windows.Forms.Label();
             this.label2 = new System.Windows.Forms.Label();
             this.groupBox3 = new System.Windows.Forms.GroupBox();
-            this.pubblicaCheckbox = new System.Windows.Forms.CheckBox();
             this.groupBox1.SuspendLayout();
             this.groupBox2.SuspendLayout();
             this.groupBox3.SuspendLayout();
@@ -52,6 +55,12 @@
             // 
             // groupBox1
             // 
+            this.groupBox1.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.groupBox1.Controls.Add(this.radioButton1);
+            this.groupBox1.Controls.Add(this.radioButton3);
+            this.groupBox1.Controls.Add(this.auditCheckBox);
             this.groupBox1.Controls.Add(this.pubblicaCheckbox);
             this.groupBox1.Controls.Add(this.arasExcelCheckbox);
             this.groupBox1.Controls.Add(this.pdfCheckbox);
@@ -63,6 +72,61 @@
             this.groupBox1.TabIndex = 0;
             this.groupBox1.TabStop = false;
             this.groupBox1.Text = "Options";
+            // 
+            // radioButton1
+            // 
+            this.radioButton1.AutoSize = true;
+            this.radioButton1.Location = new System.Drawing.Point(264, 72);
+            this.radioButton1.Name = "radioButton1";
+            this.radioButton1.Size = new System.Drawing.Size(68, 17);
+            this.radioButton1.TabIndex = 9;
+            this.radioButton1.Text = "Generico";
+            this.radioButton1.UseVisualStyleBackColor = true;
+            // 
+            // radioButton3
+            // 
+            this.radioButton3.AutoSize = true;
+            this.radioButton3.Checked = true;
+            this.radioButton3.Location = new System.Drawing.Point(168, 72);
+            this.radioButton3.Name = "radioButton3";
+            this.radioButton3.Size = new System.Drawing.Size(90, 17);
+            this.radioButton3.TabIndex = 8;
+            this.radioButton3.TabStop = true;
+            this.radioButton3.Text = "Programmone";
+            this.radioButton3.UseVisualStyleBackColor = true;
+            // 
+            // auditCheckBox
+            // 
+            this.auditCheckBox.AutoSize = true;
+            this.auditCheckBox.Enabled = false;
+            this.auditCheckBox.Location = new System.Drawing.Point(168, 48);
+            this.auditCheckBox.Name = "auditCheckBox";
+            this.auditCheckBox.Size = new System.Drawing.Size(50, 17);
+            this.auditCheckBox.TabIndex = 7;
+            this.auditCheckBox.Text = "Audit";
+            this.auditCheckBox.UseVisualStyleBackColor = true;
+            // 
+            // pubblicaCheckbox
+            // 
+            this.pubblicaCheckbox.AutoSize = true;
+            this.pubblicaCheckbox.Enabled = false;
+            this.pubblicaCheckbox.Location = new System.Drawing.Point(6, 93);
+            this.pubblicaCheckbox.Name = "pubblicaCheckbox";
+            this.pubblicaCheckbox.Size = new System.Drawing.Size(92, 17);
+            this.pubblicaCheckbox.TabIndex = 6;
+            this.pubblicaCheckbox.Text = "Pubblica Dwg";
+            this.pubblicaCheckbox.UseVisualStyleBackColor = true;
+            // 
+            // arasExcelCheckbox
+            // 
+            this.arasExcelCheckbox.AutoSize = true;
+            this.arasExcelCheckbox.Location = new System.Drawing.Point(6, 71);
+            this.arasExcelCheckbox.Name = "arasExcelCheckbox";
+            this.arasExcelCheckbox.Size = new System.Drawing.Size(140, 17);
+            this.arasExcelCheckbox.TabIndex = 5;
+            this.arasExcelCheckbox.Text = "Genera Excel Emissione";
+            this.arasExcelCheckbox.UseVisualStyleBackColor = true;
+            this.arasExcelCheckbox.CheckedChanged += new System.EventHandler(this.arasExcelCheckbox_CheckedChanged);
             // 
             // pdfCheckbox
             // 
@@ -117,6 +181,8 @@
             // 
             // button2
             // 
+            this.button2.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.button2.Location = new System.Drawing.Point(12, 254);
             this.button2.Name = "button2";
             this.button2.Size = new System.Drawing.Size(335, 23);
@@ -127,6 +193,9 @@
             // 
             // groupBox2
             // 
+            this.groupBox2.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.groupBox2.Controls.Add(this.label1);
             this.groupBox2.Controls.Add(this.rO);
             this.groupBox2.Controls.Add(this.radioButton2);
@@ -136,6 +205,15 @@
             this.groupBox2.TabIndex = 6;
             this.groupBox2.TabStop = false;
             this.groupBox2.Text = "Destinazione Distribuzione";
+            // 
+            // label1
+            // 
+            this.label1.AutoSize = true;
+            this.label1.Location = new System.Drawing.Point(168, 20);
+            this.label1.Name = "label1";
+            this.label1.Size = new System.Drawing.Size(131, 13);
+            this.label1.TabIndex = 6;
+            this.label1.Text = "Destinazione Distribuzione";
             // 
             // rO
             // 
@@ -162,29 +240,10 @@
             // progressBar1
             // 
             this.progressBar1.Dock = System.Windows.Forms.DockStyle.Bottom;
-            this.progressBar1.Location = new System.Drawing.Point(0, 283);
+            this.progressBar1.Location = new System.Drawing.Point(0, 291);
             this.progressBar1.Name = "progressBar1";
             this.progressBar1.Size = new System.Drawing.Size(365, 23);
             this.progressBar1.TabIndex = 7;
-            // 
-            // arasExcelCheckbox
-            // 
-            this.arasExcelCheckbox.AutoSize = true;
-            this.arasExcelCheckbox.Location = new System.Drawing.Point(6, 71);
-            this.arasExcelCheckbox.Name = "arasExcelCheckbox";
-            this.arasExcelCheckbox.Size = new System.Drawing.Size(140, 17);
-            this.arasExcelCheckbox.TabIndex = 5;
-            this.arasExcelCheckbox.Text = "Genera Excel Emissione";
-            this.arasExcelCheckbox.UseVisualStyleBackColor = true;
-            // 
-            // label1
-            // 
-            this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(168, 20);
-            this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(131, 13);
-            this.label1.TabIndex = 6;
-            this.label1.Text = "Destinazione Distribuzione";
             // 
             // label2
             // 
@@ -197,6 +256,9 @@
             // 
             // groupBox3
             // 
+            this.groupBox3.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.groupBox3.Controls.Add(this.label2);
             this.groupBox3.Controls.Add(this.listaRadio);
             this.groupBox3.Controls.Add(this.pianiRadio);
@@ -207,29 +269,20 @@
             this.groupBox3.TabStop = false;
             this.groupBox3.Text = "Divisione Distribuzione";
             // 
-            // pubblicaCheckbox
-            // 
-            this.pubblicaCheckbox.AutoSize = true;
-            this.pubblicaCheckbox.Location = new System.Drawing.Point(6, 93);
-            this.pubblicaCheckbox.Name = "pubblicaCheckbox";
-            this.pubblicaCheckbox.Size = new System.Drawing.Size(92, 17);
-            this.pubblicaCheckbox.TabIndex = 6;
-            this.pubblicaCheckbox.Text = "Pubblica Dwg";
-            this.pubblicaCheckbox.UseVisualStyleBackColor = true;
-            // 
             // GenEmiForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(365, 306);
+            this.ClientSize = new System.Drawing.Size(365, 314);
             this.Controls.Add(this.groupBox3);
             this.Controls.Add(this.progressBar1);
             this.Controls.Add(this.groupBox2);
             this.Controls.Add(this.button2);
             this.Controls.Add(this.groupBox1);
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
+            this.MinimumSize = new System.Drawing.Size(381, 353);
             this.Name = "GenEmiForm";
-            this.Text = "Genera Emissione";
+            this.Text = "Oras";
             this.groupBox1.ResumeLayout(false);
             this.groupBox1.PerformLayout();
             this.groupBox2.ResumeLayout(false);
@@ -258,6 +311,9 @@
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.GroupBox groupBox3;
         public System.Windows.Forms.CheckBox pubblicaCheckbox;
+        public System.Windows.Forms.CheckBox auditCheckBox;
+        private System.Windows.Forms.RadioButton radioButton1;
+        private System.Windows.Forms.RadioButton radioButton3;
     }
 }
 

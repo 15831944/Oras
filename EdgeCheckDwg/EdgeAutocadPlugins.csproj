@@ -1,0 +1,325 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{8BE6A53F-909F-485F-BA8D-6A9CD3277B1D}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>EdgeAutocadPlugins</RootNamespace>
+    <AssemblyName>EdgeAutocadPlugins</AssemblyName>
+    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <Deterministic>true</Deterministic>
+    <TargetFrameworkProfile />
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="AcCoreMgd">
+      <HintPath>C:\ObjectARX 2019\inc\AcCoreMgd.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="AcCui">
+      <HintPath>C:\ObjectARX 2019\inc\AcCui.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="AcDbMgd">
+      <HintPath>C:\ObjectARX 2019\inc\AcDbMgd.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="acdbmgdbrep">
+      <HintPath>C:\ObjectARX 2019\inc\acdbmgdbrep.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="AcMgd">
+      <HintPath>C:\ObjectARX 2019\inc\AcMgd.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="AdWindows">
+      <HintPath>C:\ObjectARX 2019\inc\AdWindows.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="C1.Win.2, Version=2.0.20202.438, Culture=neutral, PublicKeyToken=944ae1ea0e47ca04" />
+    <Reference Include="C1.Win.C1Command.2, Version=2.0.20202.438, Culture=neutral, PublicKeyToken=e808566f358766d8" />
+    <Reference Include="C1.Win.C1FlexGrid.2, Version=2.0.20202.438, Culture=neutral, PublicKeyToken=79882d576c6336da, processorArchitecture=MSIL" />
+    <Reference Include="C1.Win.C1Input.2, Version=2.0.20202.438, Culture=neutral, PublicKeyToken=7e7ff60f0c214f9a, processorArchitecture=MSIL" />
+    <Reference Include="C1.Win.C1TrueDBGrid.4, Version=4.0.20202.438, Culture=neutral, PublicKeyToken=75ae3fb0e2b1e0da" />
+    <Reference Include="EPPlus, Version=5.5.5.0, Culture=neutral, PublicKeyToken=ea159fdaa78159a1, processorArchitecture=MSIL">
+      <HintPath>..\packages\EPPlus.5.5.5\lib\net45\EPPlus.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.IO.RecyclableMemoryStream, Version=1.3.6.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.IO.RecyclableMemoryStream.1.3.6\lib\net46\Microsoft.IO.RecyclableMemoryStream.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.Office.Interop.Excel, Version=15.0.0.0, Culture=neutral, PublicKeyToken=71e9bce111e9429c, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.Office.Interop.Excel.15.0.4795.1000\lib\net20\Microsoft.Office.Interop.Excel.dll</HintPath>
+      <EmbedInteropTypes>True</EmbedInteropTypes>
+    </Reference>
+    <Reference Include="MySql.Data, Version=8.0.23.0, Culture=neutral, PublicKeyToken=c5687fc88969c44d, processorArchitecture=MSIL" />
+    <Reference Include="Office, Version=15.0.0.0, Culture=neutral, PublicKeyToken=71e9bce111e9429c, processorArchitecture=MSIL">
+      <HintPath>..\packages\MicrosoftOfficeCore.15.0.0\lib\net35\Office.dll</HintPath>
+      <EmbedInteropTypes>True</EmbedInteropTypes>
+    </Reference>
+    <Reference Include="PresentationCore" />
+    <Reference Include="PresentationFramework" />
+    <Reference Include="System" />
+    <Reference Include="System.ComponentModel.Annotations, Version=4.2.1.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.ComponentModel.Annotations.4.7.0\lib\net461\System.ComponentModel.Annotations.dll</HintPath>
+    </Reference>
+    <Reference Include="System.ComponentModel.DataAnnotations" />
+    <Reference Include="System.configuration" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Design" />
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.Drawing.Design" />
+    <Reference Include="System.Security" />
+    <Reference Include="System.Threading.Tasks" />
+    <Reference Include="System.Windows.Forms" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Net.Http" />
+    <Reference Include="System.Xml" />
+    <Reference Include="WindowsBase, Version=4.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\WindowsBase.4.6.1055.0\lib\WindowsBase.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="ceC.cs" />
+    <Compile Include="CheckDiba.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="CheckDiba.Designer.cs">
+      <DependentUpon>CheckDiba.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Commands.cs" />
+    <Compile Include="ConfrontoDwg.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="ConfrontoDwg.Designer.cs">
+      <DependentUpon>ConfrontoDwg.cs</DependentUpon>
+    </Compile>
+    <Compile Include="DistintaBase.cs" />
+    <Compile Include="Distribuzione.cs" />
+    <Compile Include="GenEmiForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="GenEmiForm.designer.cs">
+      <DependentUpon>GenEmiForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="GenericFunction.cs" />
+    <Compile Include="myPlugin.cs" />
+    <Compile Include="opC.cs" />
+    <Compile Include="peC.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Properties\Resources.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Resources.resx</DependentUpon>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
+    <None Include="start.scr">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="CheckDiba.resx">
+      <DependentUpon>CheckDiba.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="ConfrontoDwg.resx">
+      <DependentUpon>ConfrontoDwg.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="GenEmiForm.resx">
+      <DependentUpon>GenEmiForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Properties\Resources.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\logo.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Icon1.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\logo.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\ios\iTunesArtwork%401x.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\ios\iTunesArtwork%402x.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\ios\iTunesArtwork%403x.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\imessenger\icon-messages-app-27x20%401x.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\imessenger\icon-messages-app-27x20%402x.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\imessenger\icon-messages-app-27x20%403x.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\imessenger\icon-messages-app-iPadAir-67x50%402x.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\imessenger\icon-messages-app-iPadAir-74x55%402x.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\imessenger\icon-messages-app-iPhone-60x45%401x.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\imessenger\icon-messages-app-iPhone-60x45%402x.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\imessenger\icon-messages-app-iPhone-60x45%403x.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\imessenger\icon-messages-app-store-1024x768.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\imessenger\icon-messages-app-store-1024x1024.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\imessenger\icon-messages-settings-29x29%402x.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\imessenger\icon-messages-settings-29x29%403x.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\imessenger\icon-messages-transcript-32x24%401x.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\imessenger\icon-messages-transcript-32x24%402x.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\imessenger\icon-messages-transcript-32x24%403x.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\magnifying-glass.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\hnet.com-image.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\search.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\search.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Icon-1024.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Icon-16.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Icon-20.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Icon-29.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Icon-32.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Icon-40.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Icon-48.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Icon-50.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Icon-55.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Icon-57.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Icon-58.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Icon-60.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Icon-64.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Icon-72.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Icon-76.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Icon-80.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Icon-87.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Icon-88.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Icon-100.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Icon-114.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Icon-120.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Icon-128.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Icon-144.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Icon-152.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Icon-167.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Icon-172.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Icon-180.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Icon-196.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Icon-256.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Icon-512.png" />
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+</Project>

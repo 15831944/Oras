@@ -10,9 +10,9 @@ using System.Configuration;
 using Autodesk.AutoCAD.Windows;
 using Autodesk.Windows;
 
-[assembly: ExtensionApplication(typeof(EdgeCheckDwg.MyPlugin))]
+[assembly: ExtensionApplication(typeof(EdgeAutocadPlugins.MyPlugin))]
 
-namespace EdgeCheckDwg
+namespace EdgeAutocadPlugins
 {
 
     // This class is instantiated by AutoCAD once and kept alive for the 
@@ -77,25 +77,41 @@ namespace EdgeCheckDwg
             RibbonPanel rp = new RibbonPanel();
             rp.Source = rps;
 
-            //Create a Command Item that the Dialog Launcher can use,
-            // for this test it is just a place holder.
-            //RibbonButton rci = new RibbonButton();
-            //rci.Name = "generaEmi";
-
-            //assign the Command Item to the DialgLauncher which auto-enables
-            // the little button at the lower right of a Panel
-            //rps.DialogLauncher = rci;
-
             rb = new RibbonButton();
+
+            rb.Text = "Show";
+            rb.Size = RibbonItemSize.Large;
             rb.ShowText = true;
-            rb.CommandParameter = "generaEmi ";
+            rb.Orientation = System.Windows.Controls.Orientation.Vertical;
+
+            rb.CommandParameter = "_generaEmi ";
             rb.CommandHandler = new SimpleButtonCmdHandler();
-            rb.Image = GenericFunction.ToImageSource(Properties.Resources.logo);
-            //rb.Size = ;
+
+            rb.Image = GenericFunction.Convert(Properties.Resources.icon_messages_app_27x20_1x);
+            rb.LargeImage = GenericFunction.Convert(Properties.Resources.icon_messages_app_27x20_1x);
+
 
             rps.Items.Add(rb);
+
+            RibbonButton rb1;
+            rb1 = new RibbonButton();
+
+            rb1.Text = "Show";
+            rb1.Size = RibbonItemSize.Large;
+            rb1.ShowText = true;
+            rb1.Orientation = System.Windows.Controls.Orientation.Vertical;
+
+            rb1.CommandParameter = "_checkPE ";
+            rb1.CommandHandler = new SimpleButtonCmdHandler();
+
+            rb1.Image = GenericFunction.Convert(Properties.Resources.Icon_32);
+            rb1.LargeImage = GenericFunction.Convert(Properties.Resources.Icon_32);
+
+
+            rps.Items.Add(rb1);
+
+
             return rp;
         }
     }
-
 }

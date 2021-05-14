@@ -118,7 +118,157 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <assembly alias="System.Windows.Forms" name="System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" />
-  <data name="logo" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\logo.ico;System.Drawing.Icon, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  <data name="hnet_com_image" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\hnet.com-image.ico;System.Drawing.Icon, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="Icon_100" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\Icon-100.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="Icon_1024" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\Icon-1024.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="Icon_114" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\Icon-114.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="Icon_120" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\Icon-120.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="Icon_128" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\Icon-128.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="Icon_144" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\Icon-144.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="Icon_152" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\Icon-152.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="Icon_16" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\Icon-16.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="Icon_167" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\Icon-167.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="Icon_172" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\Icon-172.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="Icon_180" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\Icon-180.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="Icon_196" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\Icon-196.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="Icon_20" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\Icon-20.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="Icon_256" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\Icon-256.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="Icon_32" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\Icon-32.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="Icon_40" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\Icon-40.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="Icon_48" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\Icon-48.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="Icon_50" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\Icon-50.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="Icon_512" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\Icon-512.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="Icon_55" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\Icon-55.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="Icon_57" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\Icon-57.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="Icon_58" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\Icon-58.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="Icon_60" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\Icon-60.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="Icon_64" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\Icon-64.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="Icon_72" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\Icon-72.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="Icon_76" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\Icon-76.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="Icon_80" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\Icon-80.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="Icon_87" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\Icon-87.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="Icon_88" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\Icon-88.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="icon_messages_app_27x20_1x" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\imessenger\icon-messages-app-27x20@1x.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="icon_messages_app_27x20_2x" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\imessenger\icon-messages-app-27x20@2x.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="icon_messages_app_27x20_3x" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\imessenger\icon-messages-app-27x20@3x.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="icon_messages_app_iPadAir_67x50_2x" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\imessenger\icon-messages-app-iPadAir-67x50@2x.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="icon_messages_app_iPadAir_74x55_2x" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\imessenger\icon-messages-app-iPadAir-74x55@2x.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="icon_messages_app_iPhone_60x45_1x" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\imessenger\icon-messages-app-iPhone-60x45@1x.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="icon_messages_app_iPhone_60x45_2x" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\imessenger\icon-messages-app-iPhone-60x45@2x.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="icon_messages_app_iPhone_60x45_3x" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\imessenger\icon-messages-app-iPhone-60x45@3x.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="icon_messages_app_store_1024x1024" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\imessenger\icon-messages-app-store-1024x1024.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="icon_messages_app_store_1024x768" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\imessenger\icon-messages-app-store-1024x768.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="icon_messages_settings_29x29_2x" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\imessenger\icon-messages-settings-29x29@2x.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="icon_messages_settings_29x29_3x" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\imessenger\icon-messages-settings-29x29@3x.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="icon_messages_transcript_32x24_1x" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\imessenger\icon-messages-transcript-32x24@1x.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="icon_messages_transcript_32x24_2x" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\imessenger\icon-messages-transcript-32x24@2x.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="icon_messages_transcript_32x24_3x" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\imessenger\icon-messages-transcript-32x24@3x.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="iTunesArtwork_1x" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\ios\iTunesArtwork@1x.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="iTunesArtwork_2x" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\ios\iTunesArtwork@2x.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="iTunesArtwork_3x" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\ios\iTunesArtwork@3x.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="magnifying_glass" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\magnifying-glass.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="search" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\search.ico;System.Drawing.Icon, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="search1" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\search.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
 </root>

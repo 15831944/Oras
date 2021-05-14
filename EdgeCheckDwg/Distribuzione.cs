@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Data;
 using System.Linq;
 
-namespace EdgeCheckDwg
+namespace EdgeAutocadPlugins
 {
     class Distribuzione
     {
@@ -479,7 +479,7 @@ namespace EdgeCheckDwg
                         orderby count descending
                         select new { Value = g.Key, Count = count };
 
-                conteggio.Add(lotto,q);
+                conteggio.Add(lotto, q);
             }
 
             return conteggio;

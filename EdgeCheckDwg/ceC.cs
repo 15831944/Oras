@@ -1,6 +1,6 @@
 ﻿using System.Data;
 
-namespace EdgeCheckDwg
+namespace EdgeAutocadPlugins
 {
     internal class ceC
     {

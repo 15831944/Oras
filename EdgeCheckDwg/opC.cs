@@ -1,4 +1,4 @@
-﻿namespace EdgeCheckDwg
+﻿namespace EdgeAutocadPlugins
 {
     internal class opC
     {

@@ -10,39 +10,42 @@ using System.Collections.Generic;
 using System.Data;
 using System.IO;
 using System.Linq;
-using System.Runtime.InteropServices;
 using DataTable = System.Data.DataTable;
 
-namespace EdgeCheckDwg
+namespace EdgeAutocadPlugins
 {
     public class Commands
-    {     
+    {
+        public static string folderInviati = @"X:\Commesse\Focchi\200000 40L\02.Shop_Drawings\02.Inviati\PE";
+        public static string folderRecenti = @"X:\Commesse\Focchi\200000 40L\97 Auto.Cicli\PE";
         [CommandMethod("checkPE")]
         public void checkPE()
         {
-            string folderInviati = @"X:\Commesse\Focchi\200000 40L\02.Shop_Drawings\02.Inviati\PE";
-            string folderRecenti = @"X:\Commesse\Focchi\200000 40L\97 Auto.Cicli\PE";
-
-            Dictionary<string, Dictionary<DataTable, DataTable>> data = new Dictionary<string, Dictionary<DataTable, DataTable>>();
-
-            string[] filePathsRecenti = Directory.GetFiles(folderRecenti, "*.dwg");
-            string[] filePathsInviati = Directory.GetFiles(folderInviati, "*.dwg", SearchOption.AllDirectories);
-
-            List<string> filtro = new List<string>()
-            {
-            };
-
-            filtro = filtro.Distinct().ToList();
-
             ConfrontoDwg pb = new ConfrontoDwg();
             pb.Show();
+        }
+
+        public static void avviaCheckPE(ConfrontoDwg pb)
+        {
+            Dictionary<string, Dictionary<DataTable, DataTable>> data = new Dictionary<string, Dictionary<DataTable, DataTable>>();
+
+            string[] filePathsRecenti = GenericFunction.getRecentiRev(Directory.GetFiles(folderRecenti, "*.dwg"));
+            string[] filePathsInviati = GenericFunction.getRecentiRev(Directory.GetFiles(folderInviati, "*.dwg", SearchOption.AllDirectories));
+
+            List<string> filtro = new List<string>();
+
+            filtro = filtro.Distinct().ToList();
 
             pb.progressBar1.Minimum = 0;
 
             if (filtro.Count > 0)
+            {
                 pb.progressBar1.Maximum = filtro.Count - 1;
+            }
             else
+            {
                 pb.progressBar1.Maximum = filePathsRecenti.Length - 1;
+            }
 
             int c = 0;
             foreach (string f in filePathsRecenti)
@@ -52,17 +55,20 @@ namespace EdgeCheckDwg
                 nf = nf.Split('_')[0];
 
                 if (filtro.Count > 0)
+                {
                     if (!filtro.Contains(nf))
+                    {
                         continue;
+                    }
+                }
 
-                //pb.progressBar1.Value = c-1;
                 pb.label2.Text = f;
 
                 DataTable dt1 = risultatiTabella(f);
 
                 string nameFile = Path.GetFileName(f);
 
-                string pathInv = filePathsInviati.Where(a => a.Contains(nameFile)).FirstOrDefault();
+                string pathInv = filePathsInviati.Where(a => a.Contains(nf)).FirstOrDefault();
 
                 if (pathInv != null)
                 {
@@ -71,26 +77,58 @@ namespace EdgeCheckDwg
                     if (!AreTablesTheSame(dt1, dt2))
                     {
                         // Tabelle non uguali
-                        Dictionary<DataTable, DataTable> dtConf = new Dictionary<DataTable, DataTable>();
-                        dtConf.Add(dt1, dt2);
+                        Dictionary<DataTable, DataTable> dtConf = new Dictionary<DataTable, DataTable>
+                        {
+                            { dt1, dt2 }
+                        };
                         data.Add(f, dtConf);
                     }
                 }
                 c += 1;
             }
 
-            pb.Dispose();
-
             List<string> disegniCambiati = data.Keys.ToList();
+
+            foreach (string d in disegniCambiati)
+            {
+                pb.logbox.Items.Add(d);
+            }
         }
 
 
         public static GenEmiForm formEmi;
+
+
         [CommandMethod("generaEmi")]
         public void generaEmi()
         {
             formEmi = new GenEmiForm();
             formEmi.Show();
+        }
+
+
+
+        [CommandMethod("generaPdf")]
+        public void autocadGeneraPdf()
+        {
+            //formEmi = new GenEmiForm();
+            //formEmi.Show();
+
+            //generoPDF(string[] listaFiles)
+        }
+
+
+        [CommandMethod("pubblicaInviati")]
+        public void pubblicaInviati()
+        {
+        }
+
+
+        [CommandMethod("checkDiba")]
+        public void controlloDistintaBase()
+        {
+            CheckDiba dcd = new CheckDiba();
+            dcd.Show();
         }
 
         public static DataTable risultatiTabellaCE(string nomeFile)
@@ -118,13 +156,16 @@ namespace EdgeCheckDwg
 
                     int[] Indexes = new int[100];
 
-                    for (int i = 0; i < Indexes.Length; i++) Indexes[i] = -1;
+                    for (int i = 0; i < Indexes.Length; i++)
+                    {
+                        Indexes[i] = -1;
+                    }
 
                     // trovata tabella Distinta Base
                     // leggi e trasferisci tutte le righe in tabella di appoggio
                     for (int h = 0; h < tbl.Rows.Count; h++)
                     {
-                        String szRowType = tbl.Cells[h, -1].Style.ToUpper();
+                        string szRowType = tbl.Cells[h, -1].Style.ToUpper();
 
                         if (szRowType == @"_HEADER")
                         {
@@ -132,15 +173,30 @@ namespace EdgeCheckDwg
                             // caricare e associale alla datarow corrente
                             for (int j = 0; j < tbl.Columns.Count; j++)
                             {
-                                String sz = tbl.Cells[h, j].GetTextString(FormatOption.IgnoreMtextFormat).ToUpper();    // recupera titolo
+                                string sz = tbl.Cells[h, j].GetTextString(FormatOption.IgnoreMtextFormat).ToUpper();    // recupera titolo
                                 sz = CleanHeaderName(sz);
-                                if (sz.Length == 0) continue;
+                                if (sz.Length == 0)
+                                {
+                                    continue;
+                                }
 
                                 // abbina a indice colonna in DataTable
-                                if (sz.StartsWith(@"CODICE")) Indexes[j] = 0;
-                                else if (sz == @"DIST") Indexes[j] = 1;
-                                else if (sz.StartsWith(@"DESCRIZION")) Indexes[j] = 2;
-                                else if (sz == @"DISTINV") Indexes[j] = 3;
+                                if (sz.StartsWith(@"CODICE"))
+                                {
+                                    Indexes[j] = 0;
+                                }
+                                else if (sz == @"DIST")
+                                {
+                                    Indexes[j] = 1;
+                                }
+                                else if (sz.StartsWith(@"DESCRIZION"))
+                                {
+                                    Indexes[j] = 2;
+                                }
+                                else if (sz == @"DISTINV")
+                                {
+                                    Indexes[j] = 3;
+                                }
                             }
                         }
                         else if (szRowType == @"_DATA")
@@ -158,7 +214,9 @@ namespace EdgeCheckDwg
                                 }
                             }
                             if (!string.IsNullOrEmpty(dr_new.ItemArray[0].ToString()))
+                            {
                                 dt.Rows.Add(dr_new);
+                            }
                         }
                     }
 
@@ -174,6 +232,7 @@ namespace EdgeCheckDwg
 
             return dt;
         }
+
         public static DataTable risultatiTabella(string nomeFile)
         {
             //Document oDoc = Application.DocumentManager.Open(nomeFile);
@@ -205,13 +264,16 @@ namespace EdgeCheckDwg
 
                     int[] Indexes = new int[100];
 
-                    for (int i = 0; i < Indexes.Length; i++) Indexes[i] = -1;
+                    for (int i = 0; i < Indexes.Length; i++)
+                    {
+                        Indexes[i] = -1;
+                    }
 
                     // trovata tabella Distinta Base
                     // leggi e trasferisci tutte le righe in tabella di appoggio
                     for (int h = 0; h < tbl.Rows.Count; h++)
                     {
-                        String szRowType = tbl.Cells[h, -1].Style.ToUpper();
+                        string szRowType = tbl.Cells[h, -1].Style.ToUpper();
 
                         if (szRowType == @"_HEADER")
                         {
@@ -219,15 +281,30 @@ namespace EdgeCheckDwg
                             // caricare e associale alla datarow corrente
                             for (int j = 0; j < tbl.Columns.Count; j++)
                             {
-                                String sz = tbl.Cells[h, j].GetTextString(FormatOption.IgnoreMtextFormat).ToUpper();    // recupera titolo
+                                string sz = tbl.Cells[h, j].GetTextString(FormatOption.IgnoreMtextFormat).ToUpper();    // recupera titolo
                                 sz = CleanHeaderName(sz);
-                                if (sz.Length == 0) continue;
+                                if (sz.Length == 0)
+                                {
+                                    continue;
+                                }
 
                                 // abbina a indice colonna in DataTable
-                                if (sz.StartsWith(@"CODICE")) Indexes[j] = 0;
-                                else if (sz == @"DIST") Indexes[j] = 1;
-                                else if (sz.StartsWith(@"DESCRIZION")) Indexes[j] = 2;
-                                else if (sz == @"DISTINV") Indexes[j] = 3;
+                                if (sz.StartsWith(@"CODICE"))
+                                {
+                                    Indexes[j] = 0;
+                                }
+                                else if (sz == @"DIST")
+                                {
+                                    Indexes[j] = 1;
+                                }
+                                else if (sz.StartsWith(@"DESCRIZION"))
+                                {
+                                    Indexes[j] = 2;
+                                }
+                                else if (sz == @"DISTINV")
+                                {
+                                    Indexes[j] = 3;
+                                }
                             }
                         }
                         else if (szRowType == @"_DATA")
@@ -245,7 +322,9 @@ namespace EdgeCheckDwg
                                 }
                             }
                             if (!string.IsNullOrEmpty(dr_new.ItemArray[0].ToString()))
+                            {
                                 dt.Rows.Add(dr_new);
+                            }
                         }
                     }
 
@@ -261,12 +340,20 @@ namespace EdgeCheckDwg
 
             return dt;
         }
-        public static String ToString(Object o)
-        {
-            String result = "";
 
-            if (o == null) return result;
-            if (o is DBNull) return result;
+        public static string ToString(object o)
+        {
+            string result = "";
+
+            if (o == null)
+            {
+                return result;
+            }
+
+            if (o is DBNull)
+            {
+                return result;
+            }
 
             try
             {
@@ -279,9 +366,10 @@ namespace EdgeCheckDwg
 
             return result;
         }
-        public static String StripFormatString(String szIn)
+
+        public static string StripFormatString(string szIn)
         {
-            String result = szIn;
+            string result = szIn;
             int p1, p2, f1, f2;
 
             do
@@ -289,11 +377,14 @@ namespace EdgeCheckDwg
                 // cerca delimitatori testo formattato
                 p1 = result.IndexOf('{');
                 p2 = result.IndexOf('}');
-                if ((p1 == -1) || (p2 == -1)) break;
+                if ((p1 == -1) || (p2 == -1))
+                {
+                    break;
+                }
 
                 if (p2 > p1)
                 {
-                    String fld = result.Substring(p1 + 1, p2 - p1 - 1);
+                    string fld = result.Substring(p1 + 1, p2 - p1 - 1);
 
                     // cerca delimitatori formattazione e rimuovi
                     do
@@ -301,8 +392,15 @@ namespace EdgeCheckDwg
                         f1 = fld.IndexOf('\\');
                         f2 = fld.IndexOf(';');
 
-                        if ((f1 == -1) || (f2 == -1)) break;
-                        if (f2 > f1) fld = fld.Remove(f1, f2 - f1 + 1);
+                        if ((f1 == -1) || (f2 == -1))
+                        {
+                            break;
+                        }
+
+                        if (f2 > f1)
+                        {
+                            fld = fld.Remove(f1, f2 - f1 + 1);
+                        }
                     }
                     while (f2 > f1);
 
@@ -320,40 +418,58 @@ namespace EdgeCheckDwg
                 f1 = result.IndexOf('\\');
                 f2 = result.IndexOf(';');
 
-                if ((f1 == -1) || (f2 == -1)) break;
-                if (f2 > f1) result = result.Remove(f1, f2 - f1 + 1);
+                if ((f1 == -1) || (f2 == -1))
+                {
+                    break;
+                }
+
+                if (f2 > f1)
+                {
+                    result = result.Remove(f1, f2 - f1 + 1);
+                }
             }
             while (f2 > f1);
 
             return result;
         }
-        public static String CleanHeaderName(String szIn)
+
+        public static string CleanHeaderName(string szIn)
         {
-            String result = "";
+            string result = "";
 
             // elimina righe oltre la prima (commenti, u.m.)
             int r = szIn.IndexOf("\\P");
-            if (r > 0) szIn = szIn.Substring(0, r);
-
-            foreach (Char c in szIn)
+            if (r > 0)
             {
-                if (Char.IsLetterOrDigit(c)) result += c;
-                else if ((c == '(') || (c == '[') || (c == '{')) break;
+                szIn = szIn.Substring(0, r);
+            }
+
+            foreach (char c in szIn)
+            {
+                if (char.IsLetterOrDigit(c))
+                {
+                    result += c;
+                }
+                else if ((c == '(') || (c == '[') || (c == '{'))
+                {
+                    break;
+                }
             }
 
             return result;
         }
-        public static ObjectId FindTable(Database dwg, Transaction tr, String szHeaderKey)
+
+        public static ObjectId FindTable(Database dwg, Transaction tr, string szHeaderKey)
         {
             ObjectId result = ObjectId.Null;
 
             try
             {
                 // separa eventuali chiavi multiple
-                String[] vKeys = szHeaderKey.ToUpper().Split('|');
+                string[] vKeys = szHeaderKey.ToUpper().Split('|');
 
                 BlockTable bt = (BlockTable)tr.GetObject(dwg.BlockTableId, OpenMode.ForRead);
-                String szFilename = Path.GetFileNameWithoutExtension(dwg.Filename);
+                string szFilename = Path.GetFileNameWithoutExtension(dwg.Filename);
 
                 // cerca in tutti i layouts
                 foreach (ObjectId btrId in bt)
@@ -365,7 +481,10 @@ namespace EdgeCheckDwg
                     {
                         result = _FindTable(btr, tr, vKeys);
 
-                        if (result != ObjectId.Null) break;
+                        if (result != ObjectId.Null)
+                        {
+                            break;
+                        }
                     }
                 }
 
@@ -383,7 +502,7 @@ namespace EdgeCheckDwg
 
             return result;
         }
-        public static ObjectId _FindTable(BlockTableRecord ms, Transaction tr, String[] vKeys)
+        public static ObjectId _FindTable(BlockTableRecord ms, Transaction tr, string[] vKeys)
         {
             ObjectId result = ObjectId.Null;
 
@@ -394,9 +513,9 @@ namespace EdgeCheckDwg
                 {
                     Table tbl = dbo as Table;
 
-                    String szTitle = tbl.Cells[0, 0].TextString.ToUpper();
+                    string szTitle = tbl.Cells[0, 0].TextString.ToUpper();
 
-                    foreach (String s in vKeys)
+                    foreach (string s in vKeys)
                     {
                         if (szTitle.Contains(s))
                         {
@@ -412,22 +531,25 @@ namespace EdgeCheckDwg
         public static bool AreTablesTheSame(DataTable tbl1, DataTable tbl2)
         {
             if (tbl1.Rows.Count != tbl2.Rows.Count || tbl1.Columns.Count != tbl2.Columns.Count)
+            {
                 return false;
-
+            }
 
             for (int i = 0; i < tbl1.Rows.Count; i++)
             {
                 for (int c = 0; c < tbl1.Columns.Count; c++)
                 {
-                    var a = tbl1.Rows[i][c];
-                    var b = tbl2.Rows[i][c];
-                    if (!Equals(tbl1.Rows[i][c], tbl2.Rows[i][c]))
+                    object a = tbl1.Rows[i][c];
+                    object b = tbl2.Rows[i][c];
+                    if (!Equals(tbl1.Rows[i][c], tbl2.Rows[i][c])) {
+                        object aa = tbl1.Rows[i][c];
+                        object bb = tbl2.Rows[i][c];
                         return false;
+                    }
                 }
             }
             return true;
         }
-
         internal static void generoPDF(string[] listaFiles)
         {
             Application.MainWindow.WindowState = Window.State.Minimized;
@@ -453,7 +575,47 @@ namespace EdgeCheckDwg
             Application.MainWindow.Visible = true;
             Application.MainWindow.WindowState = Window.State.Maximized;
         }
+        internal static void auditDwg(string[] listaFiles)
+        {
+            List<string> toDelete = new List<string>();
 
+            foreach (string nomefile in listaFiles)
+            {
+                Database db = new Database(false, true);
+
+                db.ReadDwgFile(nomefile, FileOpenMode.OpenForReadAndAllShare, false, null);
+
+                //Database currDb = HostApplicationServices.WorkingDatabase;
+
+                //HostApplicationServices.WorkingDatabase = db;
+
+                //db.Audit(true, false);
+
+                //toDelete.Add(nomefile);
+                //db.SaveAs(nomefile.Replace(".dwg", "_tmp.dwg"), DwgVersion.Current);
+
+                db.Dispose();
+
+                //HostApplicationServices.WorkingDatabase = currDb;
+
+                Document doc = Autodesk.AutoCAD.ApplicationServices.DocumentCollectionExtension.Open(Autodesk.AutoCAD.ApplicationServices.Application.DocumentManager, nomefile, false);
+
+                object adoc = doc.GetAcadDocument();
+
+                if (adoc != null)
+                {
+                    adoc.GetType().InvokeMember("PurgeAll", System.Reflection.BindingFlags.InvokeMethod, null, adoc, null);
+                }
+
+                doc.CloseAndSave(nomefile);
+            }
+
+            //foreach (string nf in toDelete)
+            //{
+            //    File.Delete(nf);
+            //    System.IO.File.Move(nf.Replace(".dwg", "_tmp.dwg"), nf);
+            //}
+        }
         internal static List<opC> CicloOP(string[] listaFiles)
         {
             List<opC> results = new List<opC>();
@@ -490,17 +652,34 @@ namespace EdgeCheckDwg
                                     string value = ar.TextString;
 
                                     if (tag == "CODICE_PROFILO")
+                                    {
                                         cartiglioOP.CODICE_PROFILO = value;
+                                    }
+
                                     if (tag == "N°_OP")
+                                    {
                                         cartiglioOP.N_OP = value;
+                                    }
+
                                     if (tag == "DESCRIZIONE")
+                                    {
                                         cartiglioOP.DESCRIZIONE = value;
+                                    }
+
                                     if (tag == "DATA_EMISSIONE")
+                                    {
                                         cartiglioOP.DATA_EMISSIONE = value;
+                                    }
+
                                     if (tag == "DISEGNATORE")
+                                    {
                                         cartiglioOP.DISEGNATORE = value;
+                                    }
+
                                     if (tag == "VERIFICATA_EMISSIONE_DA")
+                                    {
                                         cartiglioOP.VERIFICATA_EMISSIONE_DA = value;
+                                    }
                                 }
 
                                 cartiglioOP.NOMEFILEDWG = Path.GetFileName(nomefile);
@@ -517,27 +696,13 @@ namespace EdgeCheckDwg
 
             return results;
         }
-
         internal static List<ceC> CicloCE(string[] listaFiles)
         {
             List<ceC> results = new List<ceC>();
 
             foreach (string nomefile in listaFiles)
             {
-                //DocumentCollection acDocMgr = Application.DocumentManager;
-                //Document acDoc = acDocMgr.Add(nomefile);
-                //DocumentLock acLckDoc = acDoc.LockDocument();
-
-                //ChangeLayerVisibility(acDoc, @"TABELLE", false);
-                //ChangeLayerVisibility(acDoc, @"PRELIMINARE", false);
-
-                //ChangeNonPrintableLayerVisibility(acDoc, false);
-
-                //Database db = acDoc.Database;
-
                 Database db = new Database(false, true);
-
-                //HostApplicationServices.WorkingDatabase = db;
 
                 db.ReadDwgFile(nomefile, FileOpenMode.OpenForReadAndAllShare, false, null);
 
@@ -547,8 +712,12 @@ namespace EdgeCheckDwg
 
                     BlockTableRecord btrMS = (BlockTableRecord)tr.GetObject(bt[BlockTableRecord.PaperSpace], OpenMode.ForRead);
 
-                    // Cartiglio
+                    //if (!btrMS.HasFields)
+                    //{
+                    //    btrMS = (BlockTableRecord)tr.GetObject(bt[BlockTableRecord.ModelSpace], OpenMode.ForRead);
+                    //}
 
+                    // Cartiglio
                     ceC cartiglioCE = new ceC();
 
                     foreach (ObjectId idBlock in btrMS)
@@ -569,19 +738,60 @@ namespace EdgeCheckDwg
                                     string tag = ar.Tag;
                                     string value = ar.TextString;
 
-                                    if (tag == "TITLE_1") // DESCRIZIONE
-                                        cartiglioCE.DESCRIZIONE = value;
-                                    if (tag == "REVOPE.0") // EMESSO
-                                        cartiglioCE.EMESSO = value;
-                                    if (tag == "COMM") // COMMESSA
-                                        cartiglioCE.COMMESSA = value;
-                                    if (tag == "NR_DIS") // NOME // CLASSE // SOTTOCLASSE
-                                        cartiglioCE.NOME = value;
-                                    if (tag == "TYPE") // DESTINAZIONE
-                                        cartiglioCE.TYPE = value;
-                                    if(tag == "REVDESC.0")
-                                        cartiglioCE.NOMEEMI = value;
 
+                                    if (blRef.Name == "focCART_WS")
+                                    {
+                                        if (tag == "TITLE_1") // DESCRIZIONE
+                                        {
+                                            cartiglioCE.DESCRIZIONE = value;
+                                        }
+
+                                        if (tag == "REVOPE.0") // EMESSO
+                                        {
+                                            cartiglioCE.EMESSO = value;
+                                        }
+
+                                        if (tag == "COMM") // COMMESSA
+                                        {
+                                            cartiglioCE.COMMESSA = value;
+                                        }
+
+                                        if (tag == "NR_DIS") // NOME // CLASSE // SOTTOCLASSE
+                                        {
+                                            cartiglioCE.NOME = value;
+                                        }
+
+                                        if (tag == "TYPE") // DESTINAZIONE
+                                        {
+                                            cartiglioCE.TYPE = value;
+                                        }
+
+                                        if (tag == "REVOPE.2" && !string.IsNullOrEmpty(value)) // EMESSO
+                                        {
+                                            cartiglioCE.EMESSO = value;
+                                        }
+                                        else if (tag == "REVOPE.1" && !string.IsNullOrEmpty(value) && string.IsNullOrEmpty(cartiglioCE.EMESSO)) // EMISSIONE RECENTE
+                                        {
+                                            cartiglioCE.EMESSO = value;
+                                        }
+                                        else if (tag == "REVOPE.0" && string.IsNullOrEmpty(cartiglioCE.EMESSO)) // EMISSIONE RECENTE
+                                        {
+                                            cartiglioCE.EMESSO = value;
+                                        }
+
+                                        if (tag == "REVDESC.2" && !string.IsNullOrEmpty(value)) // EMISSIONE RECENTE
+                                        {
+                                            cartiglioCE.NOMEEMI = value;
+                                        }
+                                        else if (tag == "REVDESC.1" && !string.IsNullOrEmpty(value) && string.IsNullOrEmpty(cartiglioCE.NOMEEMI)) // EMISSIONE RECENTE
+                                        {
+                                            cartiglioCE.NOMEEMI = value;
+                                        }
+                                        else if (tag == "REVDESC.0" && string.IsNullOrEmpty(cartiglioCE.NOMEEMI))
+                                        {
+                                            cartiglioCE.NOMEEMI = value;
+                                        }
+                                    }
                                 }
 
                                 cartiglioCE.CLASSE = cartiglioCE.NOME.Substring(0,2);
@@ -609,13 +819,16 @@ namespace EdgeCheckDwg
 
                         int[] Indexes = new int[100];
 
-                        for (int i = 0; i < Indexes.Length; i++) Indexes[i] = -1;
+                        for (int i = 0; i < Indexes.Length; i++)
+                        {
+                            Indexes[i] = -1;
+                        }
 
                         // trovata tabella Distinta Base
                         // leggi e trasferisci tutte le righe in tabella di appoggio
                         for (int h = 0; h < tbl.Rows.Count; h++)
                         {
-                            String szRowType = tbl.Cells[h, -1].Style.ToUpper();
+                            string szRowType = tbl.Cells[h, -1].Style.ToUpper();
 
                             if (szRowType == @"CELLA POS")
                             {
@@ -623,14 +836,26 @@ namespace EdgeCheckDwg
                                 // caricare e associale alla datarow corrente
                                 for (int j = 0; j < tbl.Columns.Count; j++)
                                 {
-                                    String sz = tbl.Cells[h, j].GetTextString(FormatOption.IgnoreMtextFormat).ToUpper();    // recupera titolo
+                                    string sz = tbl.Cells[h, j].GetTextString(FormatOption.IgnoreMtextFormat).ToUpper();    // recupera titolo
                                     sz = CleanHeaderName(sz);
-                                    if (sz.Length == 0) continue;
+                                    if (sz.Length == 0)
+                                    {
+                                        continue;
+                                    }
 
                                     // abbina a indice colonna in DataTable
-                                    if (sz.StartsWith(@"POS")) Indexes[j] = 0;
-                                    else if (sz == @"LM") Indexes[j] = 1;
-                                    else if (sz.StartsWith(@"HM")) Indexes[j] = 2;
+                                    if (sz.StartsWith(@"POS"))
+                                    {
+                                        Indexes[j] = 0;
+                                    }
+                                    else if (sz == @"LM")
+                                    {
+                                        Indexes[j] = 1;
+                                    }
+                                    else if (sz.StartsWith(@"HM"))
+                                    {
+                                        Indexes[j] = 2;
+                                    }
                                 }
                             }
                             else if (szRowType == @"CELLA DATI")
@@ -648,7 +873,9 @@ namespace EdgeCheckDwg
                                     }
                                 }
                                 if (!string.IsNullOrEmpty(dr_new.ItemArray[0].ToString()))
+                                {
                                     dt.Rows.Add(dr_new);
+                                }
                             }
                         }
 
@@ -676,13 +903,16 @@ namespace EdgeCheckDwg
 
                         int[] Indexes = new int[100];
 
-                        for (int i = 0; i < Indexes.Length; i++) Indexes[i] = -1;
+                        for (int i = 0; i < Indexes.Length; i++)
+                        {
+                            Indexes[i] = -1;
+                        }
 
                         // trovata tabella Distinta Base
                         // leggi e trasferisci tutte le righe in tabella di appoggio
                         for (int h = 0; h < tbl.Rows.Count; h++)
                         {
-                            String szRowType = tbl.Cells[h, -1].Style.ToUpper();
+                            string szRowType = tbl.Cells[h, -1].Style.ToUpper();
 
                             if (szRowType == @"_HEADER")
                             {
@@ -690,17 +920,38 @@ namespace EdgeCheckDwg
                                 // caricare e associale alla datarow corrente
                                 for (int j = 0; j < tbl.Columns.Count; j++)
                                 {
-                                    String sz = tbl.Cells[h, j].GetTextString(FormatOption.IgnoreMtextFormat).ToUpper();    // recupera titolo
+                                    string sz = tbl.Cells[h, j].GetTextString(FormatOption.IgnoreMtextFormat).ToUpper();    // recupera titolo
                                     sz = CleanHeaderName(sz);
-                                    if (sz.Length == 0) continue;
+                                    if (sz.Length == 0)
+                                    {
+                                        continue;
+                                    }
 
                                     // abbina a indice colonna in DataTable
-                                    if (sz.StartsWith(@"TIPOLOGIA")) Indexes[j] = 0;
-                                    else if (sz == @"CODICE") Indexes[j] = 1;
-                                    else if (sz == @"QTA") Indexes[j] = 2;
-                                    else if (sz == @"UM") Indexes[j] = 3;
-                                    else if (sz == @"OC") Indexes[j] = 4;
-                                    else if (sz == @"DESCRIZIONE") Indexes[j] = 5;
+                                    if (sz.StartsWith(@"TIPOLOGIA"))
+                                    {
+                                        Indexes[j] = 0;
+                                    }
+                                    else if (sz == @"CODICE")
+                                    {
+                                        Indexes[j] = 1;
+                                    }
+                                    else if (sz == @"QTA")
+                                    {
+                                        Indexes[j] = 2;
+                                    }
+                                    else if (sz == @"UM")
+                                    {
+                                        Indexes[j] = 3;
+                                    }
+                                    else if (sz == @"OC")
+                                    {
+                                        Indexes[j] = 4;
+                                    }
+                                    else if (sz == @"DESCRIZIONE")
+                                    {
+                                        Indexes[j] = 5;
+                                    }
                                 }
                             }
                             else if (szRowType == @"_DATA")
@@ -718,7 +969,9 @@ namespace EdgeCheckDwg
                                     }
                                 }
                                 if (!string.IsNullOrEmpty(dr_new.ItemArray[0].ToString()))
+                                {
                                     dtDIBA.Rows.Add(dr_new);
+                                }
                             }
                         }
 
@@ -734,7 +987,6 @@ namespace EdgeCheckDwg
 
             return results;
         }
-
         internal static List<peC> CicloPE(string[] listaFiles)
         { 
             List<peC> results = new List<peC>();
@@ -744,6 +996,7 @@ namespace EdgeCheckDwg
                 Database db = new Database(false, true);
 
                 db.ReadDwgFile(nomefile, FileOpenMode.OpenForReadAndAllShare, false, null);
+
                 using (Transaction tr = db.TransactionManager.StartTransaction())
                 {
                     //ObjectId idTable = FindTable(db, tr, "OPERAZ");
@@ -751,8 +1004,12 @@ namespace EdgeCheckDwg
 
                     BlockTableRecord btrMS = (BlockTableRecord)tr.GetObject(bt[BlockTableRecord.PaperSpace], OpenMode.ForRead);
 
-                    // Cartiglio
+                    //if (!btrMS.HasFields)
+                    //{
+                    //    btrMS = (BlockTableRecord)tr.GetObject(bt[BlockTableRecord.ModelSpace], OpenMode.ForRead);
+                    //}
 
+                    // Cartiglio
                     peC cartiglioPE = new peC();
 
                     foreach (ObjectId idBlock in btrMS)
@@ -763,7 +1020,7 @@ namespace EdgeCheckDwg
                         {
                             BlockReference blRef = (BlockReference)ent;
 
-                            if (blRef.Name == "focCART_WS")
+                            if (blRef.Name == "focCART_WS" || blRef.Name == "Cartiglio Produzione")
                             {
 
                                 foreach (ObjectId id in blRef.AttributeCollection)
@@ -773,23 +1030,129 @@ namespace EdgeCheckDwg
                                     string tag = ar.Tag;
                                     string value = ar.TextString;
 
-                                    if (tag == "TITLE_1") // DESCRIZIONE
-                                        cartiglioPE.DESCRIZIONE = value;
-                                    if (tag == "REVOPE.0") // EMESSO
-                                        cartiglioPE.EMESSO = value;
-                                    if (tag == "COMM") // COMMESSA
-                                        cartiglioPE.COMMESSA = value;
-                                    if (tag == "NR_DIS") // NOME // CLASSE // SOTTOCLASSE
-                                        cartiglioPE.NOME = value;
-                                    if (tag == "TYPE") // DESTINAZIONE
-                                        cartiglioPE.TYPE = value;
-                                    if (tag == "REVDESC.0")
-                                        cartiglioPE.NOMEEMI = value;
-                                    if (tag == "TRATTAMENTO")
-                                        cartiglioPE.TRATTAMENTO = value;
-                                    if (tag == "MATERIALE")
-                                        cartiglioPE.MATERIALE = value;
+                                    if(blRef.Name == "focCART_WS")
+                                    {
+                                        if (tag == "TITLE_1") // DESCRIZIONE
+                                        {
+                                            cartiglioPE.DESCRIZIONE = value;
+                                        }
 
+                                        if (tag == "COMM") // COMMESSA
+                                        {
+                                            cartiglioPE.COMMESSA = value;
+                                        }
+
+                                        if (tag == "NR_DIS") // NOME // CLASSE // SOTTOCLASSE
+                                        {
+                                            cartiglioPE.NOME = value;
+                                        }
+
+                                        if (tag == "TYPE") // DESTINAZIONE
+                                        {
+                                            cartiglioPE.TYPE = value;
+                                        }
+
+                                        if (tag == "TRATTAMENTO")
+                                        {
+                                            cartiglioPE.TRATTAMENTO = value;
+                                        }
+
+                                        if (tag == "MATERIALE")
+                                        {
+                                            cartiglioPE.MATERIALE = value;
+                                        }
+
+                                        if (tag == "REVOPE.2" && !string.IsNullOrEmpty(value)) // EMESSO
+                                        {
+                                            cartiglioPE.EMESSO = value;
+                                        }
+                                        else if (tag == "REVOPE.1" && !string.IsNullOrEmpty(value) && string.IsNullOrEmpty(cartiglioPE.EMESSO)) // EMISSIONE RECENTE
+                                        {
+                                            cartiglioPE.EMESSO = value;
+                                        }
+                                        else if (tag == "REVOPE.0" && string.IsNullOrEmpty(cartiglioPE.EMESSO)) // EMISSIONE RECENTE
+                                        {
+                                            cartiglioPE.EMESSO = value;
+                                        }
+
+                                        if (tag == "REVDESC.2" && !string.IsNullOrEmpty(value)) // EMISSIONE RECENTE
+                                        {
+                                            cartiglioPE.NOMEEMI = value;
+                                        }
+                                        else if (tag == "REVDESC.1" && !string.IsNullOrEmpty(value) && string.IsNullOrEmpty(cartiglioPE.NOMEEMI)) // EMISSIONE RECENTE
+                                        {
+                                            cartiglioPE.NOMEEMI = value;
+                                        }
+                                        else if (tag == "REVDESC.0" && string.IsNullOrEmpty(cartiglioPE.NOMEEMI))
+                                        { 
+                                            cartiglioPE.NOMEEMI = value;
+                                        }
+
+                                        
+                                    }
+                                    else if (blRef.Name == "Cartiglio Produzione")
+                                    {
+                                        if (tag == "DESCRIZIONE") // DESCRIZIONE
+                                        {
+                                            cartiglioPE.DESCRIZIONE = value;
+                                        }
+
+                                        if (tag == "COMMESSA") // COMMESSA
+                                        {
+                                            cartiglioPE.COMMESSA = value;
+                                        }
+
+                                        if (tag == "ARTICOLO") // NOME // CLASSE // SOTTOCLASSE
+                                        {
+                                            cartiglioPE.NOME = value;
+                                        }
+
+                                        if (tag == "TYPE") // DESTINAZIONE
+                                        {
+                                            cartiglioPE.TYPE = value;
+                                        }
+
+                                        if (tag == "DESCRIZIONE0")
+                                        {
+                                            cartiglioPE.NOMEEMI = value;
+                                        }
+
+                                        if (tag == "TRATTAMENTO")
+                                        {
+                                            cartiglioPE.TRATTAMENTO = value;
+                                        }
+
+                                        if (tag == "MATERIALE")
+                                        {
+                                            cartiglioPE.MATERIALE = value;
+                                        }
+
+                                        if (tag == "EMESSO2" && !string.IsNullOrEmpty(value)) // EMESSO
+                                        {
+                                            cartiglioPE.EMESSO = value;
+                                        }
+                                        else if (tag == "EMESSO1" && !string.IsNullOrEmpty(value) && string.IsNullOrEmpty(cartiglioPE.EMESSO)) // EMISSIONE RECENTE
+                                        {
+                                            cartiglioPE.EMESSO = value;
+                                        }
+                                        else if (tag == "EMESSO0" && string.IsNullOrEmpty(cartiglioPE.EMESSO)) // EMISSIONE RECENTE
+                                        {
+                                            cartiglioPE.EMESSO = value;
+                                        }
+
+                                        if (tag == "DESCRIZIONE2" && !string.IsNullOrEmpty(value)) // EMISSIONE RECENTE
+                                        {
+                                            cartiglioPE.NOMEEMI = value;
+                                        }
+                                        else if (tag == "DESCRIZIONE1" && !string.IsNullOrEmpty(value) && string.IsNullOrEmpty(cartiglioPE.NOMEEMI)) // EMISSIONE RECENTE
+                                        {
+                                            cartiglioPE.NOMEEMI = value;
+                                        }
+                                        else if (tag == "DESCRIZIONE0" && string.IsNullOrEmpty(cartiglioPE.NOMEEMI))
+                                        {
+                                            cartiglioPE.NOMEEMI = value;
+                                        }
+                                    }
                                 }
 
                                 cartiglioPE.CLASSE = cartiglioPE.NOME.Substring(0, 2);
@@ -801,7 +1164,6 @@ namespace EdgeCheckDwg
                             }
                         }
                     }
-
 
                     // Posizioni
                     System.Data.DataTable dt = new System.Data.DataTable();
@@ -817,13 +1179,16 @@ namespace EdgeCheckDwg
 
                         int[] Indexes = new int[100];
 
-                        for (int i = 0; i < Indexes.Length; i++) Indexes[i] = -1;
+                        for (int i = 0; i < Indexes.Length; i++)
+                        {
+                            Indexes[i] = -1;
+                        }
 
                         // trovata tabella Distinta Base
                         // leggi e trasferisci tutte le righe in tabella di appoggio
                         for (int h = 0; h < tbl.Rows.Count; h++)
                         {
-                            String szRowType = tbl.Cells[h, -1].Style.ToUpper();
+                            string szRowType = tbl.Cells[h, -1].Style.ToUpper();
 
                             if (szRowType == @"CELLA POS")
                             {
@@ -831,14 +1196,30 @@ namespace EdgeCheckDwg
                                 // caricare e associale alla datarow corrente
                                 for (int j = 0; j < tbl.Columns.Count; j++)
                                 {
-                                    String sz = tbl.Cells[h, j].GetTextString(FormatOption.IgnoreMtextFormat).ToUpper();    // recupera titolo
+                                    string sz = tbl.Cells[h, j].GetTextString(FormatOption.IgnoreMtextFormat).ToUpper();    // recupera titolo
                                     sz = CleanHeaderName(sz);
-                                    if (sz.Length == 0) continue;
+                                    if (sz.Length == 0)
+                                    {
+                                        continue;
+                                    }
 
                                     // abbina a indice colonna in DataTable
-                                    if (sz.StartsWith(@"POS")) Indexes[j] = 0;
-                                    else if (sz == @"LM") Indexes[j] = 1;
-                                    else if (sz.StartsWith(@"HM")) Indexes[j] = 2;
+                                    if (sz.StartsWith(@"POS"))
+                                    {
+                                        Indexes[j] = 0;
+                                    }
+                                    else if (sz == @"LM")
+                                    {
+                                        Indexes[j] = 1;
+                                    }
+                                    else if (sz.StartsWith(@"HM"))
+                                    {
+                                        Indexes[j] = 2;
+                                    }
+                                    else if (sz.StartsWith(@"L"))
+                                    {
+                                        Indexes[j] = 1;
+                                    }
                                 }
                             }
                             else if (szRowType == @"CELLA DATI")
@@ -856,7 +1237,9 @@ namespace EdgeCheckDwg
                                     }
                                 }
                                 if (!string.IsNullOrEmpty(dr_new.ItemArray[0].ToString()))
+                                {
                                     dt.Rows.Add(dr_new);
+                                }
                             }
                         }
 
@@ -867,7 +1250,6 @@ namespace EdgeCheckDwg
                     }
 
                     // DIBA
-
                     System.Data.DataTable dtDIBA = new System.Data.DataTable();
                     dtDIBA.Columns.Add("TIPOLOGIA", Type.GetType("System.String"));
                     dtDIBA.Columns.Add("CODICE", Type.GetType("System.String"));
@@ -878,19 +1260,22 @@ namespace EdgeCheckDwg
                     dtDIBA.Columns.Add("nrow", Type.GetType("System.Int32"));
 
                     ObjectId idTableDIBA = FindTable(db, tr, "DIST");
-                    if (idTable != ObjectId.Null)
+                    if (idTableDIBA.IsValid)
                     {
                         Table tbl = (Table)tr.GetObject(idTableDIBA, OpenMode.ForRead);
 
                         int[] Indexes = new int[100];
 
-                        for (int i = 0; i < Indexes.Length; i++) Indexes[i] = -1;
+                        for (int i = 0; i < Indexes.Length; i++)
+                        {
+                            Indexes[i] = -1;
+                        }
 
                         // trovata tabella Distinta Base
                         // leggi e trasferisci tutte le righe in tabella di appoggio
                         for (int h = 0; h < tbl.Rows.Count; h++)
                         {
-                            String szRowType = tbl.Cells[h, -1].Style.ToUpper();
+                            string szRowType = tbl.Cells[h, -1].Style.ToUpper();
 
                             if (szRowType == @"_HEADER")
                             {
@@ -898,17 +1283,38 @@ namespace EdgeCheckDwg
                                 // caricare e associale alla datarow corrente
                                 for (int j = 0; j < tbl.Columns.Count; j++)
                                 {
-                                    String sz = tbl.Cells[h, j].GetTextString(FormatOption.IgnoreMtextFormat).ToUpper();    // recupera titolo
+                                    string sz = tbl.Cells[h, j].GetTextString(FormatOption.IgnoreMtextFormat).ToUpper();    // recupera titolo
                                     sz = CleanHeaderName(sz);
-                                    if (sz.Length == 0) continue;
+                                    if (sz.Length == 0)
+                                    {
+                                        continue;
+                                    }
 
                                     // abbina a indice colonna in DataTable
-                                    if (sz.StartsWith(@"TIPOLOGIA")) Indexes[j] = 0;
-                                    else if (sz == @"CODICE") Indexes[j] = 1;
-                                    else if (sz == @"QTA") Indexes[j] = 2;
-                                    else if (sz == @"UM") Indexes[j] = 3;
-                                    else if (sz == @"OC") Indexes[j] = 4;
-                                    else if (sz == @"DESCRIZIONE") Indexes[j] = 5;
+                                    if (sz.StartsWith(@"TIPOLOGIA"))
+                                    {
+                                        Indexes[j] = 0;
+                                    }
+                                    else if (sz == @"CODICE")
+                                    {
+                                        Indexes[j] = 1;
+                                    }
+                                    else if (sz == @"QTA")
+                                    {
+                                        Indexes[j] = 2;
+                                    }
+                                    else if (sz == @"UM")
+                                    {
+                                        Indexes[j] = 3;
+                                    }
+                                    else if (sz == @"OC")
+                                    {
+                                        Indexes[j] = 4;
+                                    }
+                                    else if (sz == @"DESCRIZIONE")
+                                    {
+                                        Indexes[j] = 5;
+                                    }
                                 }
                             }
                             else if (szRowType == @"_DATA")
@@ -926,7 +1332,9 @@ namespace EdgeCheckDwg
                                     }
                                 }
                                 if (!string.IsNullOrEmpty(dr_new.ItemArray[0].ToString()))
+                                {
                                     dtDIBA.Rows.Add(dr_new);
+                                }
                             }
                         }
 
@@ -943,8 +1351,384 @@ namespace EdgeCheckDwg
 
             return results;
         }
+        internal static List<peC> CicloCartigioGenerico(string[] listaFiles)
+        {
+            List<peC> results = new List<peC>();
 
-        
+            foreach (string nomefile in listaFiles)
+            {
+                Database db = new Database(false, true);
+
+                db.ReadDwgFile(nomefile, FileOpenMode.OpenForReadAndAllShare, false, null);
+
+                using (Transaction tr = db.TransactionManager.StartTransaction())
+                {
+                    //ObjectId idTable = FindTable(db, tr, "OPERAZ");
+                    BlockTable bt = (BlockTable)tr.GetObject(db.BlockTableId, OpenMode.ForRead);
+
+                    BlockTableRecord btrMS = (BlockTableRecord)tr.GetObject(bt[BlockTableRecord.PaperSpace], OpenMode.ForRead);
+
+                    if (!btrMS.HasFields)
+                    {
+                        btrMS = (BlockTableRecord)tr.GetObject(bt[BlockTableRecord.ModelSpace], OpenMode.ForRead);
+                    }
+
+                    // Cartiglio
+                    peC cartiglioPE = new peC();
+
+                    foreach (ObjectId idBlock in btrMS)
+                    {
+                        Entity ent = (Entity)tr.GetObject(idBlock, OpenMode.ForRead, false);
+
+                        if (ent.GetType() == typeof(BlockReference))
+                        {
+                            BlockReference blRef = (BlockReference)ent;
+
+                            if (blRef.Name == "focCART_WS" || blRef.Name == "Cartiglio Produzione")
+                            {
+
+                                foreach (ObjectId id in blRef.AttributeCollection)
+                                {
+                                    AttributeReference ar = (AttributeReference)tr.GetObject(id, OpenMode.ForRead);
+
+                                    string tag = ar.Tag;
+                                    string value = ar.TextString;
+
+                                    if (blRef.Name == "focCART_WS")
+                                    {
+                                        if (tag == "TITLE_1") // DESCRIZIONE
+                                        {
+                                            cartiglioPE.DESCRIZIONE = value;
+                                        }
+
+                                        if (tag == "COMM") // COMMESSA
+                                        {
+                                            cartiglioPE.COMMESSA = value;
+                                        }
+
+                                        if (tag == "NR_DIS") // NOME // CLASSE // SOTTOCLASSE
+                                        {
+                                            cartiglioPE.NOME = value;
+                                        }
+
+                                        if (tag == "TYPE") // DESTINAZIONE
+                                        {
+                                            cartiglioPE.TYPE = value;
+                                        }
+
+                                        if (tag == "TRATTAMENTO")
+                                        {
+                                            cartiglioPE.TRATTAMENTO = value;
+                                        }
+
+                                        if (tag == "MATERIALE")
+                                        {
+                                            cartiglioPE.MATERIALE = value;
+                                        }
+
+                                        if (tag == "REVOPE.2" && !string.IsNullOrEmpty(value)) // EMESSO
+                                        {
+                                            cartiglioPE.EMESSO = value;
+                                        }
+                                        else if (tag == "REVOPE.1" && !string.IsNullOrEmpty(value) && string.IsNullOrEmpty(cartiglioPE.EMESSO)) // EMISSIONE RECENTE
+                                        {
+                                            cartiglioPE.EMESSO = value;
+                                        }
+                                        else if (tag == "REVOPE.0" && string.IsNullOrEmpty(cartiglioPE.EMESSO)) // EMISSIONE RECENTE
+                                        {
+                                            cartiglioPE.EMESSO = value;
+                                        }
+
+                                        if (tag == "REVDESC.2" && !string.IsNullOrEmpty(value)) // EMISSIONE RECENTE
+                                        {
+                                            cartiglioPE.NOMEEMI = value;
+                                        }
+                                        else if (tag == "REVDESC.1" && !string.IsNullOrEmpty(value) && string.IsNullOrEmpty(cartiglioPE.NOMEEMI)) // EMISSIONE RECENTE
+                                        {
+                                            cartiglioPE.NOMEEMI = value;
+                                        }
+                                        else if (tag == "REVDESC.0" && string.IsNullOrEmpty(cartiglioPE.NOMEEMI))
+                                        {
+                                            cartiglioPE.NOMEEMI = value;
+                                        }
+
+
+                                    }
+                                    else if (blRef.Name == "Cartiglio Produzione")
+                                    {
+                                        if (tag == "DESCRIZIONE") // DESCRIZIONE
+                                        {
+                                            cartiglioPE.DESCRIZIONE = value;
+                                        }
+
+                                        if (tag == "COMMESSA") // COMMESSA
+                                        {
+                                            cartiglioPE.COMMESSA = value;
+                                        }
+
+                                        if (tag == "ARTICOLO") // NOME // CLASSE // SOTTOCLASSE
+                                        {
+                                            cartiglioPE.NOME = value;
+                                        }
+
+                                        if (tag == "TYPE") // DESTINAZIONE
+                                        {
+                                            cartiglioPE.TYPE = value;
+                                        }
+
+                                        if (tag == "DESCRIZIONE0")
+                                        {
+                                            cartiglioPE.NOMEEMI = value;
+                                        }
+
+                                        if (tag == "TRATTAMENTO")
+                                        {
+                                            cartiglioPE.TRATTAMENTO = value;
+                                        }
+
+                                        if (tag == "MATERIALE")
+                                        {
+                                            cartiglioPE.MATERIALE = value;
+                                        }
+
+                                        if (tag == "EMESSO2" && !string.IsNullOrEmpty(value) && value != "-") // EMESSO
+                                        {
+                                            cartiglioPE.EMESSO = value;
+                                        }
+                                        else if (tag == "EMESSO1" && !string.IsNullOrEmpty(value) && string.IsNullOrEmpty(cartiglioPE.EMESSO) && value != "-") // EMISSIONE RECENTE
+                                        {
+                                            cartiglioPE.EMESSO = value;
+                                        }
+                                        else if (tag == "EMESSO0" && string.IsNullOrEmpty(cartiglioPE.EMESSO) && value != "-") // EMISSIONE RECENTE
+                                        {
+                                            cartiglioPE.EMESSO = value;
+                                        }
+
+                                        if (tag == "DESCRIZIONE2" && !string.IsNullOrEmpty(value) && value != "-") // EMISSIONE RECENTE
+                                        {
+                                            cartiglioPE.NOMEEMI = value;
+                                        }
+                                        else if (tag == "DESCRIZIONE1" && !string.IsNullOrEmpty(value) && string.IsNullOrEmpty(cartiglioPE.NOMEEMI) && value != "-") // EMISSIONE RECENTE
+                                        {
+                                            cartiglioPE.NOMEEMI = value;
+                                        }
+                                        else if (tag == "DESCRIZIONE0" && string.IsNullOrEmpty(cartiglioPE.NOMEEMI) && value != "-")
+                                        {
+                                            cartiglioPE.NOMEEMI = value;
+                                        }
+                                    }
+                                }
+
+                                cartiglioPE.CLASSE = cartiglioPE.NOME.Substring(0, 2);
+                                cartiglioPE.SOTTOCLASSE = cartiglioPE.NOME.Substring(0, 2);
+                                cartiglioPE.NOMEDWG = Path.GetFileName(nomefile);
+                                cartiglioPE.NOMEPDF = Path.GetFileName(nomefile).Split('.')[0].ToString() + ".pdf";
+
+                                results.Add(cartiglioPE);
+                            }
+                        }
+                    }
+
+                    // Posizioni
+                    System.Data.DataTable dt = new System.Data.DataTable();
+                    dt.Columns.Add("POS", Type.GetType("System.String"));
+                    dt.Columns.Add("LM", Type.GetType("System.String"));
+                    dt.Columns.Add("HM", Type.GetType("System.String"));
+                    dt.Columns.Add("nrow", Type.GetType("System.Int32"));
+
+                    ObjectId idTable = FindTable(db, tr, "POS");
+
+                    if (idTable == ObjectId.Null)
+                    {
+                        idTable = FindTable(db, tr, "RamPro");
+                    }
+
+                    if (idTable != ObjectId.Null)
+                    {
+                        Table tbl = (Table)tr.GetObject(idTable, OpenMode.ForRead);
+
+                        int[] Indexes = new int[100];
+
+                        for (int i = 0; i < Indexes.Length; i++)
+                        {
+                            Indexes[i] = -1;
+                        }
+
+                        // trovata tabella Distinta Base
+                        // leggi e trasferisci tutte le righe in tabella di appoggio
+                        for (int h = 0; h < tbl.Rows.Count; h++)
+                        {
+                            string szRowType = tbl.Cells[h, -1].Style.ToUpper();
+
+                            if ((szRowType == @"_DATA" || szRowType == @"_HEADER") && h == 0)
+                            {
+                                // analizza titoli colonne per terminare quali colonne
+                                // caricare e associale alla datarow corrente
+                                for (int j = 0; j < tbl.Columns.Count; j++)
+                                {
+                                    string sz = tbl.Cells[h, j].GetTextString(FormatOption.IgnoreMtextFormat).ToUpper();    // recupera titolo
+                                    sz = CleanHeaderName(sz);
+                                    if (sz.Length == 0)
+                                    {
+                                        continue;
+                                    }
+
+                                    // abbina a indice colonna in DataTable
+                                    if (sz.StartsWith(@"POS"))
+                                    {
+                                        Indexes[j] = 0;
+                                    }
+                                    else if (sz == @"LM")
+                                    {
+                                        Indexes[j] = 1;
+                                    }
+                                    else if (sz.StartsWith(@"HM"))
+                                    {
+                                        Indexes[j] = 2;
+                                    }
+                                    else if (sz.StartsWith(@"L"))
+                                    {
+                                        Indexes[j] = 1;
+                                    }
+                                }
+                            }
+                            else if (szRowType == @"_DATA" && h != 0)
+                            {
+                                DataRow dr_new = dt.NewRow();
+                                dr_new["nrow"] = h;
+
+                                // in base ai titoli colonne determina quale campo caricare
+                                for (int j = 0; j < tbl.Columns.Count; j++)
+                                {
+                                    if (Indexes[j] > -1)
+                                    {
+                                        // colonna associata, trasferisci
+                                        dr_new[Indexes[j]] = StripFormatString(tbl.Cells[h, j].TextString);
+                                    }
+                                }
+
+                                int n = tbl.Rows[h].Count();
+
+                                if (!string.IsNullOrEmpty(dr_new.ItemArray[0].ToString()) && n != 1)
+                                {
+                                    dt.Rows.Add(dr_new);
+                                }
+                            }
+                        }
+
+                        // salva modifiche a tabella
+                        dt.AcceptChanges();
+
+                        cartiglioPE.POSIZIONI = dt;
+                    }
+
+
+
+
+
+
+                    // DIBA
+                    System.Data.DataTable dtDIBA = new System.Data.DataTable();
+                    dtDIBA.Columns.Add("TIPOLOGIA", Type.GetType("System.String"));
+                    dtDIBA.Columns.Add("CODICE", Type.GetType("System.String"));
+                    dtDIBA.Columns.Add("QTA", Type.GetType("System.String"));
+                    dtDIBA.Columns.Add("UM", Type.GetType("System.String"));
+                    dtDIBA.Columns.Add("OC", Type.GetType("System.String"));
+                    dtDIBA.Columns.Add("DESCRIZIONE", Type.GetType("System.String"));
+                    dtDIBA.Columns.Add("nrow", Type.GetType("System.Int32"));
+
+                    ObjectId idTableDIBA = FindTable(db, tr, "DIST");
+                    if (idTableDIBA.IsValid)
+                    {
+                        Table tbl = (Table)tr.GetObject(idTableDIBA, OpenMode.ForRead);
+
+                        int[] Indexes = new int[100];
+
+                        for (int i = 0; i < Indexes.Length; i++)
+                        {
+                            Indexes[i] = -1;
+                        }
+
+                        // trovata tabella Distinta Base
+                        // leggi e trasferisci tutte le righe in tabella di appoggio
+                        for (int h = 0; h < tbl.Rows.Count; h++)
+                        {
+                            string szRowType = tbl.Cells[h, -1].Style.ToUpper();
+
+                            if (szRowType == @"_HEADER")
+                            {
+                                // analizza titoli colonne per terminare quali colonne
+                                // caricare e associale alla datarow corrente
+                                for (int j = 0; j < tbl.Columns.Count; j++)
+                                {
+                                    string sz = tbl.Cells[h, j].GetTextString(FormatOption.IgnoreMtextFormat).ToUpper();    // recupera titolo
+                                    sz = CleanHeaderName(sz);
+                                    if (sz.Length == 0)
+                                    {
+                                        continue;
+                                    }
+
+                                    // abbina a indice colonna in DataTable
+                                    if (sz.StartsWith(@"TIPOLOGIA"))
+                                    {
+                                        Indexes[j] = 0;
+                                    }
+                                    else if (sz == @"CODICE")
+                                    {
+                                        Indexes[j] = 1;
+                                    }
+                                    else if (sz == @"QTA")
+                                    {
+                                        Indexes[j] = 2;
+                                    }
+                                    else if (sz == @"UM")
+                                    {
+                                        Indexes[j] = 3;
+                                    }
+                                    else if (sz == @"OC")
+                                    {
+                                        Indexes[j] = 4;
+                                    }
+                                    else if (sz == @"DESCRIZIONE")
+                                    {
+                                        Indexes[j] = 5;
+                                    }
+                                }
+                            }
+                            else if (szRowType == @"_DATA")
+                            {
+                                DataRow dr_new = dtDIBA.NewRow();
+                                dr_new["nrow"] = h;
+
+                                // in base ai titoli colonne determina quale campo caricare
+                                for (int j = 0; j < tbl.Columns.Count; j++)
+                                {
+                                    if (Indexes[j] > -1)
+                                    {
+                                        // colonna associata, trasferisci
+                                        dr_new[Indexes[j]] = StripFormatString(tbl.Cells[h, j].TextString);
+                                    }
+                                }
+                                if (!string.IsNullOrEmpty(dr_new.ItemArray[0].ToString()))
+                                {
+                                    dtDIBA.Rows.Add(dr_new);
+                                }
+                            }
+                        }
+
+                        // salva modifiche a tabella
+                        dtDIBA.AcceptChanges();
+
+                        cartiglioPE.DIBA = dtDIBA;
+                    }
+                }
+
+
+                db.Dispose();
+            }
+
+            return results;
+        }
         public static void ChangeNonPrintableLayerVisibility(Document doc, bool bVisible)
         {
             // esegui operazioni sul documento aperto
@@ -965,9 +1749,15 @@ namespace EdgeCheckDwg
                         lay.UpgradeOpen();
 
                         // se è il layer corrente, passa su layer "0" prima di spegnerlo
-                        if (doc.Database.Clayer == id) doc.Database.Clayer = cLayers["0"];
+                        if (doc.Database.Clayer == id)
+                        {
+                            doc.Database.Clayer = cLayers["0"];
+                        }
 
-                        if (lay.IsWriteEnabled) lay.IsFrozen = !bVisible;   // imposta visibilità richiesta
+                        if (lay.IsWriteEnabled)
+                        {
+                            lay.IsFrozen = !bVisible;   // imposta visibilità richiesta
+                        }
                     }
                 }
 
@@ -982,8 +1772,7 @@ namespace EdgeCheckDwg
                 tr.Dispose();
             }
         }
-
-        public static void ChangeLayerVisibility(Document doc, String szLayerName, bool bVisible)
+        public static void ChangeLayerVisibility(Document doc, string szLayerName, bool bVisible)
         {
             // esegui operazioni sul documento aperto
             Transaction tr = doc.TransactionManager.StartTransaction();
@@ -995,10 +1784,16 @@ namespace EdgeCheckDwg
                 if (cLayers.Has(szLayerName))
                 {
                     // se è il layer corrente, passa su layer "0" prima di spegnerlo
-                    if (doc.Database.Clayer == cLayers[szLayerName]) doc.Database.Clayer = cLayers["0"];
+                    if (doc.Database.Clayer == cLayers[szLayerName])
+                    {
+                        doc.Database.Clayer = cLayers["0"];
+                    }
 
                     LayerTableRecord lay = (LayerTableRecord)tr.GetObject(cLayers[szLayerName], OpenMode.ForWrite);
-                    if (lay.IsWriteEnabled) lay.IsFrozen = !bVisible;
+                    if (lay.IsWriteEnabled)
+                    {
+                        lay.IsFrozen = !bVisible;
+                    }
                 }
 
                 tr.Commit();
@@ -1012,19 +1807,24 @@ namespace EdgeCheckDwg
                 tr.Dispose();
             }
         }
-
-        static public PreviewEndPlotStatus _DoPlot(String szDocName, Database dwg, String szOutFolder, String szPlotterName, String szStyle, String szMedia, String szScale, bool bCentrapagina, bool bMultiPage)
+        public static PreviewEndPlotStatus _DoPlot(string szDocName, Database dwg, string szOutFolder, string szPlotterName, string szStyle, string szMedia, string szScale, bool bCentrapagina, bool bMultiPage)
         {
             PreviewEndPlotStatus result = PreviewEndPlotStatus.Normal;
 
             // controlli generici
-            if (szPlotterName.Length == 0) return result;
+            if (szPlotterName.Length == 0)
+            {
+                return result;
+            }
             //if (szStyle.Length == 0) return result;
 
             short bgPlot = (short)Autodesk.AutoCAD.ApplicationServices.Core.Application.GetSystemVariable("BACKGROUNDPLOT");
             Autodesk.AutoCAD.ApplicationServices.Core.Application.SetSystemVariable("BACKGROUNDPLOT", 0);
 
-            if (szMedia.StartsWith("auto", StringComparison.CurrentCultureIgnoreCase)) szMedia = "";         // forza selezione automatica del formato
+            if (szMedia.StartsWith("auto", StringComparison.CurrentCultureIgnoreCase))
+            {
+                szMedia = "";         // forza selezione automatica del formato
+            }
 
             Point3d pMin, pMax;
             StdScaleType eScale = ConvertScaleToType(szScale);
@@ -1035,7 +1835,7 @@ namespace EdgeCheckDwg
             try
             {
                 // ricorda il layout corrente
-                String szCurrentLayout = LayoutManager.Current.CurrentLayout;
+                string szCurrentLayout = LayoutManager.Current.CurrentLayout;
 
                 // recupera i layout da plottare
                 ObjectIdCollection layoutsToPlot = GetLayoutIds(dwg);
@@ -1076,21 +1876,35 @@ namespace EdgeCheckDwg
                         // imposta cartella e nome file di uscita, se necessario
                         // stampa su file, probabilmente PDF o DWF
                         // controlla ultimo slash cartella uscita
-                        if (!szOutFolder.EndsWith(@"\")) szOutFolder += @"\";
+                        if (!szOutFolder.EndsWith(@"\"))
+                        {
+                            szOutFolder += @"\";
+                        }
 
-                        String szOutFile = szOutFolder + System.IO.Path.GetFileNameWithoutExtension(szDocName);
+                        string szOutFile = szOutFolder + System.IO.Path.GetFileNameWithoutExtension(szDocName);
 
                         // trattamento casi speciali di stampanti PDF
-                        String s = szPlotterName.ToUpper();
+                        string s = szPlotterName.ToUpper();
 
                         // determina estensione dal driver di stampa
-                        if (s.Contains(@"PDF")) szOutFile += @".pdf";
-                        else if (s.Contains(@"DWF")) szOutFile += @".dwf";
-                        else szOutFile += @".plt";
+                        if (s.Contains(@"PDF"))
+                        {
+                            szOutFile += @".pdf";
+                        }
+                        else if (s.Contains(@"DWF"))
+                        {
+                            szOutFile += @".dwf";
+                        }
+                        else
+                        {
+                            szOutFile += @".plt";
+                        }
 
                         // elimina pre-esistente se necessario
-                        if (System.IO.File.Exists(szOutFile)) System.IO.File.Delete(szOutFile);
-
+                        if (System.IO.File.Exists(szOutFile))
+                        {
+                            System.IO.File.Delete(szOutFile);
+                        }
 
                         ppd.StatusMsgString = "Plotting " + System.IO.Path.GetFileNameWithoutExtension(szDocName);
 
@@ -1119,8 +1933,10 @@ namespace EdgeCheckDwg
                             ps.CopyFrom(lo);
 
                             // apri un oggetto PlotInfo associato al layout corrente
-                            PlotInfo pi = new PlotInfo();
-                            pi.Layout = lo.ObjectId;
+                            PlotInfo pi = new PlotInfo
+                            {
+                                Layout = lo.ObjectId
+                            };
 
                             // assegna stile di stampa, se presente
                             _SetPlotStyle(szStyle, ps, psv);
@@ -1139,22 +1955,33 @@ namespace EdgeCheckDwg
                             bool bPaperIsLandscape;
                             bool bAreaIsLandscape;
 
-                            if (lo.ModelType) bAreaIsLandscape = (dwg.Extmax.X - dwg.Extmin.X) > (dwg.Extmax.Y - dwg.Extmin.Y) ? true : false;
-                            else bAreaIsLandscape = (lo.Extents.MaxPoint.X - lo.Extents.MinPoint.X) > (lo.Extents.MaxPoint.Y - lo.Extents.MinPoint.Y) ? true : false;
+                            if (lo.ModelType)
+                            {
+                                bAreaIsLandscape = (dwg.Extmax.X - dwg.Extmin.X) > (dwg.Extmax.Y - dwg.Extmin.Y) ? true : false;
+                            }
+                            else
+                            {
+                                bAreaIsLandscape = (lo.Extents.MaxPoint.X - lo.Extents.MinPoint.X) > (lo.Extents.MaxPoint.Y - lo.Extents.MinPoint.Y) ? true : false;
+                            }
 
                             // determina formato ideale
                             szMedia = _PlotSetMedia(szPlotterName, szMedia, lo, ps, psv);
 
                             // imposta rotazione automatica in base al formato ed all'area di stampa
                             bPaperIsLandscape = (ps.PlotPaperSize.X > ps.PlotPaperSize.Y) ? true : false;
-                            if (bPaperIsLandscape != bAreaIsLandscape) psv.SetPlotRotation(ps, PlotRotation.Degrees270);
+                            if (bPaperIsLandscape != bAreaIsLandscape)
+                            {
+                                psv.SetPlotRotation(ps, PlotRotation.Degrees270);
+                            }
 
                             // collega a PlotInfo
                             pi.OverrideSettings = ps;
 
                             // valida parametri
-                            PlotInfoValidator piv = new PlotInfoValidator();
-                            piv.MediaMatchingPolicy = MatchingPolicy.MatchEnabled;
+                            PlotInfoValidator piv = new PlotInfoValidator
+                            {
+                                MediaMatchingPolicy = MatchingPolicy.MatchEnabled
+                            };
                             piv.Validate(pi);
 
                             if (numSheet == 1)
@@ -1242,8 +2069,10 @@ namespace EdgeCheckDwg
                         ps.CopyFrom(lo);
 
                         // apri un oggetto PlotInfo associato al layout corrente
-                        PlotInfo pi = new PlotInfo();
-                        pi.Layout = btr.LayoutId;
+                        PlotInfo pi = new PlotInfo
+                        {
+                            Layout = btr.LayoutId
+                        };
 
                         // assegna stile di stampa, se presente
                         _SetPlotStyle(szStyle, ps, psv);
@@ -1263,15 +2092,24 @@ namespace EdgeCheckDwg
                         bool bPaperIsLandscape;
                         bool bAreaIsLandscape;
 
-                        if (lo.ModelType) bAreaIsLandscape = (dwg.Extmax.X - dwg.Extmin.X) > (dwg.Extmax.Y - dwg.Extmin.Y) ? true : false;
-                        else bAreaIsLandscape = (lo.Extents.MaxPoint.X - lo.Extents.MinPoint.X) > (lo.Extents.MaxPoint.Y - lo.Extents.MinPoint.Y) ? true : false;
+                        if (lo.ModelType)
+                        {
+                            bAreaIsLandscape = (dwg.Extmax.X - dwg.Extmin.X) > (dwg.Extmax.Y - dwg.Extmin.Y) ? true : false;
+                        }
+                        else
+                        {
+                            bAreaIsLandscape = (lo.Extents.MaxPoint.X - lo.Extents.MinPoint.X) > (lo.Extents.MaxPoint.Y - lo.Extents.MinPoint.Y) ? true : false;
+                        }
 
                         // determina formato ideale
                         szMedia = _PlotSetMedia(szPlotterName, szMedia, lo, ps, psv);
 
                         // imposta rotazione automatica in base al formato ed all'area di stampa
                         bPaperIsLandscape = (ps.PlotPaperSize.X > ps.PlotPaperSize.Y) ? true : false;
-                        if (bPaperIsLandscape != bAreaIsLandscape) psv.SetPlotRotation(ps, PlotRotation.Degrees270);
+                        if (bPaperIsLandscape != bAreaIsLandscape)
+                        {
+                            psv.SetPlotRotation(ps, PlotRotation.Degrees270);
+                        }
 
                         // collega a PlotInfo
                         pi.OverrideSettings = ps;
@@ -1280,7 +2118,10 @@ namespace EdgeCheckDwg
                         result = _DoPagePlot(szDocName, false, szOutFolder, szPlotterName, pi, numSheet, layoutsToPlot.Count, lo.LayoutName);
 
                         // attendi fine stampa prima di iniziarne un'altra
-                        while (PlotFactory.ProcessPlotState != ProcessPlotState.NotPlotting) System.Windows.Forms.Application.DoEvents();
+                        while (PlotFactory.ProcessPlotState != ProcessPlotState.NotPlotting)
+                        {
+                            System.Windows.Forms.Application.DoEvents();
+                        }
                     }
                 }
 
@@ -1290,7 +2131,7 @@ namespace EdgeCheckDwg
                 //// commit più veloce di RollBack, ma fallisce se il disegno è readonly
                 //tr.Commit();
             }
-            catch (System.Exception ex)
+            catch (System.Exception)
             {
                 result = PreviewEndPlotStatus.Cancel;
             }
@@ -1302,7 +2143,7 @@ namespace EdgeCheckDwg
 
             return result;
         }
-        public static StdScaleType ConvertScaleToType(String szScale)
+        public static StdScaleType ConvertScaleToType(string szScale)
         {
             StdScaleType eScale = StdScaleType.ScaleToFit;
 
@@ -1373,7 +2214,10 @@ namespace EdgeCheckDwg
                 foreach (DBDictionaryEntry entry in layoutDic)
                 {
                     Layout lay = (Layout)Tx.GetObject(entry.Value, OpenMode.ForRead);
-                    if (lay.ModelType) continue;
+                    if (lay.ModelType)
+                    {
+                        continue;
+                    }
 
                     if (lay.LayoutName.StartsWith("Layout"))
                     {
@@ -1384,12 +2228,18 @@ namespace EdgeCheckDwg
                         int count = 0;
                         foreach (ObjectId o in btr)
                         {
-                            if (++count > 2) break;
+                            if (++count > 2)
+                            {
+                                break;
+                            }
                         }
 
                         // aggiungi solo se contiene qualche entità
                         // la prima entità è una Viewport
-                        if (count < 2) continue;
+                        if (count < 2)
+                        {
+                            continue;
+                        }
                     }
 
                     layoutIds.Add(entry.Value);
@@ -1402,20 +2252,22 @@ namespace EdgeCheckDwg
                     {
                         Layout lay = (Layout)Tx.GetObject(entry.Value, OpenMode.ForRead);
                         if (lay.ModelType)
+                        {
                             layoutIds.Add(entry.Value);
+                        }
                     }
                 }
             }
 
             return layoutIds;
         }
-        private static void _SetPlotStyle(String szStyle, PlotSettings ps, PlotSettingsValidator psv)
+        private static void _SetPlotStyle(string szStyle, PlotSettings ps, PlotSettingsValidator psv)
         {
             if (szStyle.Length > 0)
             {
                 // recupera percorso completo dello stile di stampa
                 System.Collections.Specialized.StringCollection sc = psv.GetPlotStyleSheetList();
-                foreach (String szStyleFullName in sc)
+                foreach (string szStyleFullName in sc)
                 {
                     if (System.IO.Path.GetFileName(szStyleFullName) == szStyle)
                     {
@@ -1425,7 +2277,7 @@ namespace EdgeCheckDwg
                 }
             }
         }
-        private static String _PlotSetMedia(String szPlotterName, String szMedia, Layout lo, PlotSettings ps, PlotSettingsValidator psv)
+        private static string _PlotSetMedia(string szPlotterName, string szMedia, Layout lo, PlotSettings ps, PlotSettingsValidator psv)
         {
             if (szMedia.Length > 0)
             {
@@ -1436,10 +2288,10 @@ namespace EdgeCheckDwg
                 // formato indicato, usa
                 // cerca nome canonico partendo dal nome suggerito
                 System.Collections.Specialized.StringCollection v = psv.GetCanonicalMediaNameList(ps);
-                String szCanonicalName = "", szTmp;
+                string szCanonicalName = "", szTmp;
 
 
-                foreach (String s in v)
+                foreach (string s in v)
                 {
                     if (s == szMedia)
                     {
@@ -1466,15 +2318,21 @@ namespace EdgeCheckDwg
             else
             {
                 // formato non indicato, cerca il migliore disponibile
-                if (lo.ModelType) szMedia = FindBestFormat(ps, psv, szPlotterName, lo.Database.Extmin, lo.Database.Extmax);
-                else szMedia = FindBestFormat(ps, psv, szPlotterName, lo.Extents.MinPoint, lo.Extents.MaxPoint);
+                if (lo.ModelType)
+                {
+                    szMedia = FindBestFormat(ps, psv, szPlotterName, lo.Database.Extmin, lo.Database.Extmax);
+                }
+                else
+                {
+                    szMedia = FindBestFormat(ps, psv, szPlotterName, lo.Extents.MinPoint, lo.Extents.MaxPoint);
+                }
             }
             return szMedia;
         }
         private static string FindBestFormat(PlotSettings ps, PlotSettingsValidator psv, string szPlotterName, Point3d pMin, Point3d pMax)
         {
-            String result = "";
-            String szLocalName, sztmp;
+            string result = "";
+            string szLocalName, sztmp;
             bool bAreaIsLandscape = (pMax.X - pMin.X) > (pMax.Y - pMin.Y) ? true : false;
 
             // imposta plotter e forza ScaleToFit per forzare il calcolo della scana
@@ -1486,15 +2344,15 @@ namespace EdgeCheckDwg
             {
                 System.Collections.Specialized.StringCollection vMedia = psv.GetCanonicalMediaNameList(ps);
 
-                Double pDistX = pMax.X - pMin.X;
-                Double pDistY = pMax.Y - pMin.Y;
-                Double pDiagDist = Math.Sqrt(pDistX * pDistX + pDistY * pDistY);       // shorter reference
+                double pDistX = pMax.X - pMin.X;
+                double pDistY = pMax.Y - pMin.Y;
+                double pDiagDist = Math.Sqrt(pDistX * pDistX + pDistY * pDistY);       // shorter reference
 
-                Double dBestScale = 99999.9, dBestFit = 0.0;
-                String szBestFormat = "", szBestFit = "";
+                double dBestScale = 99999.9, dBestFit = 0.0;
+                string szBestFormat = "", szBestFit = "";
 
                 // cicla su tutti i formati disponibili per trovare quello più opportuno
-                foreach (String sz in vMedia)
+                foreach (string sz in vMedia)
                 {
                     szLocalName = psv.GetLocaleMediaName(ps, sz);
                     sztmp = szLocalName.ToLower();
@@ -1513,21 +2371,24 @@ namespace EdgeCheckDwg
                         // determina rotazione ottimale per allineare i lati lunghi
                         bool bPaperIsLandscape = (ps.PlotPaperSize.X > ps.PlotPaperSize.Y) ? true : false;
 
-                        Double dUseableX = ps.PlotPaperSize.X - ps.PlotPaperMargins.MinPoint.X - ps.PlotPaperMargins.MaxPoint.X;
-                        Double dUseableY = ps.PlotPaperSize.Y - ps.PlotPaperMargins.MinPoint.Y - ps.PlotPaperMargins.MaxPoint.Y;
+                        double dUseableX = ps.PlotPaperSize.X - ps.PlotPaperMargins.MinPoint.X - ps.PlotPaperMargins.MaxPoint.X;
+                        double dUseableY = ps.PlotPaperSize.Y - ps.PlotPaperMargins.MinPoint.Y - ps.PlotPaperMargins.MaxPoint.Y;
 
-                        if (bPaperIsLandscape != bAreaIsLandscape) psv.SetPlotRotation(ps, PlotRotation.Degrees270);
+                        if (bPaperIsLandscape != bAreaIsLandscape)
+                        {
+                            psv.SetPlotRotation(ps, PlotRotation.Degrees270);
+                        }
 
                         // calcola scala sulla diagonale, in modo da avere una buona base
                         // sia per i formati orizzontali che verticali
-                        Double dDiagScale = Math.Sqrt(dUseableX * dUseableX + dUseableY * dUseableY) / pDiagDist;
+                        double dDiagScale = Math.Sqrt(dUseableX * dUseableX + dUseableY * dUseableY) / pDiagDist;
 
                         // la scala diagonale funziona bene se il rapporto tra i lati è coerente tra carta e modello
                         // altrimenti potrebbe debordare dal lato corto.
                         // Calcoliamo indipendentemente i fattori di scala sui lati per evitare fattori di scala inferiori
                         // ad 1 anche sui singoli lati
-                        Double scale_x = ((bPaperIsLandscape == bAreaIsLandscape) ? dUseableX : dUseableY) / pDistX;
-                        Double scale_y = ((bPaperIsLandscape == bAreaIsLandscape) ? dUseableY : dUseableX) / pDistY;
+                        double scale_x = ((bPaperIsLandscape == bAreaIsLandscape) ? dUseableX : dUseableY) / pDistX;
+                        double scale_y = ((bPaperIsLandscape == bAreaIsLandscape) ? dUseableY : dUseableX) / pDistY;
 
                         // ricorda scala migliore, ma superiore a 1
                         if ((dDiagScale > 1) && (scale_x > 1) && (scale_y > 1))
@@ -1573,15 +2434,17 @@ namespace EdgeCheckDwg
 
             return result;
         }
-        private static PreviewEndPlotStatus _DoPagePlot(String szDocName, bool bPreview, String szOutFolder, String szPlotterName, PlotInfo pi, int numSheet, int numTot, String szSuffix)
+        private static PreviewEndPlotStatus _DoPagePlot(string szDocName, bool bPreview, string szOutFolder, string szPlotterName, PlotInfo pi, int numSheet, int numTot, string szSuffix)
         {
             PreviewEndPlotStatus result = PreviewEndPlotStatus.Normal;
 
             try
             {
                 // valida parametri
-                PlotInfoValidator piv = new PlotInfoValidator();
-                piv.MediaMatchingPolicy = MatchingPolicy.MatchEnabled;
+                PlotInfoValidator piv = new PlotInfoValidator
+                {
+                    MediaMatchingPolicy = MatchingPolicy.MatchEnabled
+                };
                 piv.Validate(pi);
 
                 // crea dialogo di avanzamento e consenti all'utente di annullare
@@ -1604,10 +2467,14 @@ namespace EdgeCheckDwg
                     PlotEngine pe;
 
                     if (bPreview)
+                    {
                         // inizializza un controllo Preview
                         pe = PlotFactory.CreatePreviewEngine((int)PreviewEngineFlags.Plot);
+                    }
                     else
+                    {
                         pe = PlotFactory.CreatePublishEngine();
+                    }
 
                     pe.BeginPlot(ppd, null);
 
@@ -1656,7 +2523,7 @@ namespace EdgeCheckDwg
 
             return result;
         }
-        private static void _PlotSetOutput(String docName, String szOutFolder, String szPlotterName, PlotEngine pe, PlotInfo pi, int numSheet, int numTot, String szSuffix)
+        private static void _PlotSetOutput(string docName, string szOutFolder, string szPlotterName, PlotEngine pe, PlotInfo pi, int numSheet, int numTot, string szSuffix)
         {
             if (szOutFolder.Length == 0)
             {
@@ -1667,24 +2534,39 @@ namespace EdgeCheckDwg
             {
                 // stampa su file, probabilmente PDF o DWF
                 // controlla ultimo slash cartella uscita
-                if (!szOutFolder.EndsWith(@"\")) szOutFolder += @"\";
+                if (!szOutFolder.EndsWith(@"\"))
+                {
+                    szOutFolder += @"\";
+                }
 
-                String szOutFile = szOutFolder + System.IO.Path.GetFileNameWithoutExtension(docName);
+                string szOutFile = szOutFolder + System.IO.Path.GetFileNameWithoutExtension(docName);
 
                 // in caso di stampa di layout multipli aggiungi suffisso
                 //if (szSuffix.Length > 0) szOutFile += "_" + szSuffix;
                 //else if (numTot > 1) szOutFile += "_Page_" + numSheet.ToString() + "_of_" + numTot.ToString();
 
                 // trattamento casi speciali di stampanti PDF
-                String s = szPlotterName.ToUpper();
+                string s = szPlotterName.ToUpper();
 
                 // determina estensione dal driver di stampa
-                if (s.Contains(@"PDF")) szOutFile += @".pdf";
-                else if (s.Contains(@"DWF")) szOutFile += @".dwf";
-                else szOutFile += @".plt";
+                if (s.Contains(@"PDF"))
+                {
+                    szOutFile += @".pdf";
+                }
+                else if (s.Contains(@"DWF"))
+                {
+                    szOutFile += @".dwf";
+                }
+                else
+                {
+                    szOutFile += @".plt";
+                }
 
                 // elimina pre-esistente se necessario
-                if (System.IO.File.Exists(szOutFile)) System.IO.File.Delete(szOutFile);
+                if (System.IO.File.Exists(szOutFile))
+                {
+                    System.IO.File.Delete(szOutFile);
+                }
 
                 if (s.Contains(@"PDF") && s.Contains(@"ADOBE"))
                 {
@@ -1738,10 +2620,10 @@ namespace EdgeCheckDwg
         {
             if (param is RibbonButton)
             {
-                String esc = "";
+                string esc = "";
 
                 // se un comando è attivo, costruisci sequenza di escapes da anteporre al comando
-                String cmds = Autodesk.AutoCAD.ApplicationServices.Application.GetSystemVariable("CMDNAMES") as String;
+                string cmds = Autodesk.AutoCAD.ApplicationServices.Application.GetSystemVariable("CMDNAMES") as string;
 
                 if (cmds.Length > 0)
                 {
@@ -1753,7 +2635,9 @@ namespace EdgeCheckDwg
                 Document doc = Application.DocumentManager.MdiActiveDocument;
 
                 if (doc != null)
+                {
                     doc.SendStringToExecute(esc + btn.CommandParameter, true, false, false);
+                }
             }
         }
     }

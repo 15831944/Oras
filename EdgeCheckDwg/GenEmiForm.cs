@@ -7,7 +7,7 @@ using System.IO;
 using System.Linq;
 using System.Windows.Forms;
 
-namespace EdgeCheckDwg
+namespace EdgeAutocadPlugins
 {
     public partial class GenEmiForm : Form
     {
@@ -16,6 +16,8 @@ namespace EdgeCheckDwg
         public GenEmiForm()
         {
             InitializeComponent();
+            radioButton3.Visible = false;
+            radioButton1.Visible = false;
         }
 
         public static string nomeTemplate = "TemplateListaFocchi.xlsm";
@@ -241,14 +243,6 @@ namespace EdgeCheckDwg
 
             int ind = 0;
 
-            //foreach (string s in res)
-            //{
-            //    if (s.Contains('-'))
-            //        res[ind] = s.Split('-')[0];
-
-            //    ind += 1;
-            //}
-
             res = res.Where(o => o != "").ToArray();
 
             return res;
@@ -256,15 +250,23 @@ namespace EdgeCheckDwg
 
         private void start_Click(object sender, EventArgs e)
         {
-            // VALIDATORE FOLDER
+            // ! VALIDATORE FOLDER
             if (string.IsNullOrEmpty(cartellaEmissione))
             {
                 MessageBox.Show("Selezionare cartella emissione valida", "Errore");
                 return;
             }
 
+            string[] list = Directory.GetFiles(cartellaEmissione, "*.dwg", SearchOption.AllDirectories);
+
             progressBar1.Value = 0;
             progressBar1.Maximum = 3;
+
+            // Audit Dwg
+            if (auditCheckBox.Checked)
+            {
+                //Commands.auditDwg(list);
+            }
 
             // GENERAZIONE EXCEL
             if (arasExcelCheckbox.Checked)
@@ -280,22 +282,249 @@ namespace EdgeCheckDwg
 
                 // ANAGRAFICA && DIBA
                 // ? leggere info da cartiglio
-                if (Directory.Exists(cartellaEmissione + "\\CE") && Directory.Exists(cartellaEmissione + "\\PE"))
+
+                if (radioButton3.Checked)
                 {
-                    string[] listCE = Directory.GetFiles(cartellaEmissione + "\\CE", "*.dwg");
-                    string[] listPE = Directory.GetFiles(cartellaEmissione + "\\PE", "*.dwg");
-
-                    List<string> codiciCE = new List<string>();
-
-                    foreach (string nf in listCE)
+                    if (Directory.Exists(cartellaEmissione + "\\CE") && Directory.Exists(cartellaEmissione + "\\PE"))
                     {
-                        string clnf = Path.GetFileName(nf).Replace(codiceCommessa, "").Split('_')[0]+"-001";
-                        codiciCE.Add(clnf);
-                    }
+                        string[] listCE = Directory.GetFiles(cartellaEmissione + "\\CE", "*.dwg");
+                        string[] listPE = Directory.GetFiles(cartellaEmissione + "\\PE", "*.dwg");
 
-                    List<ceC> ces = Commands.CicloCE(listCE);
-                    List<peC> pes = Commands.CicloPE(listPE);
-                    
+                        List<string> codiciCE = new List<string>();
+
+                        foreach (string nf in listCE)
+                        {
+                            string clnf = Path.GetFileName(nf).Replace(codiceCommessa, "").Split('_')[0] + "-001";
+                            codiciCE.Add(clnf);
+                        }
+
+                        List<ceC> ces = Commands.CicloCE(listCE);
+                        List<peC> pes = Commands.CicloPE(listPE);
+
+                        using (ExcelPackage xlPackage = new ExcelPackage(newFile, template))
+                        {
+
+                            int index = 2;
+                            string nameWorkBook = "Anagrafica";
+
+                            ExcelWorksheet aworksheet = xlPackage.Workbook.Worksheets[nameWorkBook];
+
+                            foreach (ceC cellula in ces)
+                            {
+                                foreach (DataRow r in cellula.POSIZIONI.Rows)
+                                {
+                                    aworksheet.Cells[index, 1].Value = cellula.COMMESSA.ToString() + cellula.NOME.ToString() + "-" + r[0].ToString();
+                                    aworksheet.Cells[index, 2].Value = cellula.COMMESSA.ToString();
+                                    aworksheet.Cells[index, 3].Value = cellula.CLASSE.ToString();
+                                    aworksheet.Cells[index, 4].Value = cellula.SOTTOCLASSE.ToString();
+                                    aworksheet.Cells[index, 5].Value = cellula.NOME.ToString().Substring(2, 4);
+                                    aworksheet.Cells[index, 6].Value = r[0].ToString();
+                                    aworksheet.Cells[index, 7].Value = cellula.DESCRIZIONE.ToString();
+                                    aworksheet.Cells[index, 11].Value = (cellula.TYPE == "CANTIERE" ? "C" : "O"); // Destinazione
+                                    aworksheet.Cells[index, 12].Value = ""; // Materiale
+                                    aworksheet.Cells[index, 13].Value = ""; // Finitura
+                                    aworksheet.Cells[index, 15].Value = float.Parse(r[1].ToString());
+                                    aworksheet.Cells[index, 16].Value = float.Parse(r[2].ToString());
+                                    aworksheet.Cells[index, 18].Value = cellula.EMESSO.ToString();
+                                    aworksheet.Cells[index, 19].Value = cellula.NOMEEMI; // Descrizione rev
+                                    aworksheet.Cells[index, 21].Value = cellula.NOMEDWG.ToString();
+                                    aworksheet.Cells[index, 22].Value = cellula.NOMEPDF.ToString();
+                                    index += 1;
+                                }
+                            }
+
+                            foreach (peC pe in pes)
+                            {
+                                foreach (DataRow r in pe.POSIZIONI.Rows)
+                                {
+                                    aworksheet.Cells[index, 1].Value = pe.COMMESSA.ToString() + pe.NOME.ToString() + "-" + r[0].ToString();
+                                    aworksheet.Cells[index, 2].Value = pe.COMMESSA.ToString();
+                                    aworksheet.Cells[index, 3].Value = pe.CLASSE.ToString();
+                                    aworksheet.Cells[index, 4].Value = pe.SOTTOCLASSE.ToString();
+                                    aworksheet.Cells[index, 5].Value = pe.NOME.ToString().Substring(2, 4);
+                                    aworksheet.Cells[index, 6].Value = r[0].ToString();
+                                    aworksheet.Cells[index, 7].Value = pe.DESCRIZIONE.ToString();
+                                    aworksheet.Cells[index, 11].Value = (pe.TYPE == "CANTIERE" ? "C" : "O"); // Destinazione
+
+
+                                    // Devo cercare cosa c'è tra parentesi
+                                    aworksheet.Cells[index, 12].Value = GenericFunction.findParentesi(pe.MATERIALE); // Materiale
+                                    aworksheet.Cells[index, 13].Value = GenericFunction.findParentesi(pe.TRATTAMENTO); // Finitura
+
+                                    try
+                                    {
+                                        aworksheet.Cells[index, 15].Value = float.Parse(r[1].ToString());
+                                    }
+                                    catch { }
+                                    aworksheet.Cells[index, 16].Value = r[2].ToString();
+                                    aworksheet.Cells[index, 18].Value = pe.EMESSO.ToString();
+                                    aworksheet.Cells[index, 19].Value = pe.NOMEEMI; // Descrizione rev
+                                    aworksheet.Cells[index, 21].Value = pe.NOMEDWG.ToString();
+                                    aworksheet.Cells[index, 22].Value = pe.NOMEPDF.ToString();
+                                    index += 1;
+                                }
+                            }
+
+
+                            index = 2;
+                            nameWorkBook = "Distinta Base";
+
+                            aworksheet = xlPackage.Workbook.Worksheets[nameWorkBook];
+
+                            foreach (ceC cellula in ces)
+                            {
+                                // RICORDARSI DI ORDINARE
+
+                                //DataRowCollection drc = cellula.DIBA.Rows;
+                                int indexConteggio = 1;
+                                foreach (DataRow r in cellula.DIBA.Rows)
+                                {
+                                    aworksheet.Cells[index, 1].Value = indexConteggio;
+                                    aworksheet.Cells[index, 2].Value = r[0].ToString();
+                                    aworksheet.Cells[index, 3].Value = r[1].ToString();
+                                    aworksheet.Cells[index, 4].Value = r[5].ToString();
+                                    aworksheet.Cells[index, 5].Value = float.Parse(r[2].ToString());
+                                    aworksheet.Cells[index, 6].Value = r[4].ToString();
+                                    index += 1;
+
+                                    indexConteggio += 1;
+                                }
+
+                                index += 1;
+                            }
+
+                            foreach (peC pe in pes)
+                            {
+                                int indexConteggio = 1;
+                                if (pe.DIBA == null) continue;
+                                foreach (DataRow r in pe.DIBA.Rows)
+                                {
+                                    aworksheet.Cells[index, 1].Value = indexConteggio;
+                                    aworksheet.Cells[index, 2].Value = r[0].ToString();
+                                    aworksheet.Cells[index, 3].Value = r[1].ToString();
+                                    aworksheet.Cells[index, 4].Value = r[5].ToString();
+                                    aworksheet.Cells[index, 5].Value = float.Parse(r[2].ToString());
+                                    aworksheet.Cells[index, 6].Value = r[4].ToString();
+                                    index += 1;
+
+                                    indexConteggio += 1;
+                                }
+
+                                index += 1;
+                            }
+
+
+
+                            // OP
+                            // ? leggere info da cartiglio
+
+                            if (Directory.Exists(cartellaEmissione + "\\OP"))
+                            {
+                                string[] listOP = Directory.GetFiles(cartellaEmissione + "\\OP", "*.dwg");
+                                // devo instanziare autocad e processare
+
+                                List<opC> ops = Commands.CicloOP(listOP);
+                                index = 2;
+                                nameWorkBook = "OP";
+
+                                aworksheet = xlPackage.Workbook.Worksheets[nameWorkBook];
+
+                                foreach (opC op in ops)
+                                {
+                                    aworksheet.Cells[index, 1].Value = op.CODICE_PROFILO + "-" + op.N_OP;
+                                    aworksheet.Cells[index, 2].Value = op.CODICE_PROFILO;
+                                    aworksheet.Cells[index, 3].Value = op.N_OP.Replace("OP", "");
+                                    aworksheet.Cells[index, 4].Value = op.DESCRIZIONE;
+                                    aworksheet.Cells[index, 5].Value = "di Commessa";
+                                    aworksheet.Cells[index, 6].Value = codiceCommessa;
+                                    aworksheet.Cells[index, 7].Value = op.NOMEFILEDWG;
+                                    aworksheet.Cells[index, 8].Value = op.NOMEFILEPDF;
+
+                                    index += 1;
+                                }
+                            }
+
+
+                            // IMPEGNATI
+                            // ? leggere info da database
+
+                            try
+                            {
+                                Distribuzione d = new Distribuzione();
+
+                                Dictionary<string, dynamic> _results = new Dictionary<string, dynamic>();
+
+                                if (listaRadio.Checked)
+                                    _results = d.customQueryLotID(codiciCE);
+                                else if (pianiRadio.Checked)
+                                    _results = d.customQueryFasciePiani(codiciCE);
+
+                                var l = _results.OrderBy(key => key.Key);
+                                Dictionary<string, dynamic> results = l.ToDictionary((keyItem) => keyItem.Key, (valueItem) => valueItem.Value);
+
+                                index = 2;
+                                nameWorkBook = "Impegnati";
+
+                                aworksheet = xlPackage.Workbook.Worksheets[nameWorkBook];
+
+                                foreach (KeyValuePair<string, dynamic> data in results)
+                                {
+                                    string lotto = data.Key;
+
+                                    int indexConteggio = 1;
+
+                                    foreach (dynamic count in data.Value)
+                                    {
+                                        string nomeLotto = "";
+
+                                        string tipologia = lotto.Substring(1, 1);
+
+                                        if (tipologia == "B")
+                                            nomeLotto = "Brise Soleil Units";
+                                        if (tipologia == "K")
+                                            nomeLotto = "Corner Units";
+                                        if (tipologia == "C")
+                                            nomeLotto = "Casing Units";
+                                        if (tipologia == "A")
+                                            nomeLotto = "Standard Units";
+                                        if (tipologia == "H")
+                                            nomeLotto = "Hoist Infill";
+                                        if (tipologia == "R")
+                                            nomeLotto = "Roof";
+                                        if (tipologia == "P")
+                                            nomeLotto = "Parapets";
+
+                                        aworksheet.Cells[index, 1].Value = indexConteggio;
+                                        aworksheet.Cells[index, 2].Value = codiceCommessa + "LIS" + lotto.ToString();
+                                        aworksheet.Cells[index, 4].Value = nomeLotto;
+                                        aworksheet.Cells[index, 5].Value = codiceCommessa + count.Value.ToString();
+                                        aworksheet.Cells[index, 7].Value = count.Count;
+                                        aworksheet.Cells[index, 8].Value = (rO.Checked ? "O" : "C");
+
+                                        indexConteggio += 1;
+                                        index += 1;
+                                    }
+
+                                    index += 1;
+                                }
+                            }
+                            catch
+                            {
+
+                            }
+
+                            xlPackage.Save();
+                        }
+                    }
+                }
+                else
+                {
+                    // ! Nel caso nel cartiglio non da programmone [Generico]
+                    // ! Cerca in tutte le sotto cartelle
+                    string[] listDWG = Directory.GetFiles(cartellaEmissione, "*.dwg", SearchOption.AllDirectories);
+                    List<peC> pes = Commands.CicloCartigioGenerico((string[])listDWG.Where(a => !a.Contains("OP")).ToArray());
+                    List<opC> ops = Commands.CicloOP((string[])listDWG.Where(a => a.Contains("OP")).ToArray());
+
                     using (ExcelPackage xlPackage = new ExcelPackage(newFile, template))
                     {
 
@@ -303,30 +532,6 @@ namespace EdgeCheckDwg
                         string nameWorkBook = "Anagrafica";
 
                         ExcelWorksheet aworksheet = xlPackage.Workbook.Worksheets[nameWorkBook];
-
-                        foreach (ceC cellula in ces)
-                        {
-                            foreach (DataRow r in cellula.POSIZIONI.Rows)
-                            {
-                                aworksheet.Cells[index, 1].Value = cellula.COMMESSA.ToString() + cellula.NOME.ToString() + "-" +r[0].ToString();
-                                aworksheet.Cells[index, 2].Value = cellula.COMMESSA.ToString();
-                                aworksheet.Cells[index, 3].Value = cellula.CLASSE.ToString();
-                                aworksheet.Cells[index, 4].Value = cellula.SOTTOCLASSE.ToString();
-                                aworksheet.Cells[index, 5].Value = cellula.NOME.ToString().Substring(2,4);
-                                aworksheet.Cells[index, 6].Value = r[0].ToString();
-                                aworksheet.Cells[index, 7].Value = cellula.DESCRIZIONE.ToString();
-                                aworksheet.Cells[index, 11].Value = (cellula.TYPE == "CANTIERE" ? "C" : "O"); // Destinazione
-                                aworksheet.Cells[index, 12].Value = ""; // Materiale
-                                aworksheet.Cells[index, 13].Value = ""; // Finitura
-                                aworksheet.Cells[index, 15].Value = float.Parse(r[1].ToString());
-                                aworksheet.Cells[index, 16].Value = float.Parse(r[2].ToString());
-                                aworksheet.Cells[index, 18].Value = cellula.EMESSO.ToString();
-                                aworksheet.Cells[index, 19].Value = cellula.NOMEEMI; // Descrizione rev
-                                aworksheet.Cells[index, 21].Value = cellula.NOMEDWG.ToString();
-                                aworksheet.Cells[index, 22].Value = cellula.NOMEDWG.ToString();
-                                index += 1;
-                            }
-                        }
 
                         foreach (peC pe in pes)
                         {
@@ -340,134 +545,44 @@ namespace EdgeCheckDwg
                                 aworksheet.Cells[index, 6].Value = r[0].ToString();
                                 aworksheet.Cells[index, 7].Value = pe.DESCRIZIONE.ToString();
                                 aworksheet.Cells[index, 11].Value = (pe.TYPE == "CANTIERE" ? "C" : "O"); // Destinazione
-                                aworksheet.Cells[index, 12].Value = pe.MATERIALE; // Materiale
-                                aworksheet.Cells[index, 13].Value = pe.TRATTAMENTO; // Finitura
-                                aworksheet.Cells[index, 15].Value = float.Parse(r[1].ToString());
-                                aworksheet.Cells[index, 16].Value = float.Parse(r[2].ToString());
+
+
+                                // Devo cercare cosa c'è tra parentesi
+                                aworksheet.Cells[index, 12].Value = GenericFunction.findParentesi(pe.MATERIALE); // Materiale
+                                aworksheet.Cells[index, 13].Value = GenericFunction.findParentesi(pe.TRATTAMENTO); // Finitura
+
+                                try
+                                {
+                                    aworksheet.Cells[index, 15].Value = float.Parse(r[1].ToString());
+                                }
+                                catch { }
+                                aworksheet.Cells[index, 16].Value = r[2].ToString();
                                 aworksheet.Cells[index, 18].Value = pe.EMESSO.ToString();
                                 aworksheet.Cells[index, 19].Value = pe.NOMEEMI; // Descrizione rev
                                 aworksheet.Cells[index, 21].Value = pe.NOMEDWG.ToString();
-                                aworksheet.Cells[index, 22].Value = pe.NOMEDWG.ToString();
+                                aworksheet.Cells[index, 22].Value = pe.NOMEPDF.ToString();
                                 index += 1;
                             }
                         }
 
-
                         index = 2;
-                        nameWorkBook = "Distinta Base";
+                        nameWorkBook = "OP";
 
                         aworksheet = xlPackage.Workbook.Worksheets[nameWorkBook];
 
-                        foreach (ceC cellula in ces)
+                        foreach (opC op in ops)
                         {
-                            foreach (DataRow r in cellula.DIBA.Rows)
-                            {
-                                //aworksheet.Cells[index, 1].Value = 999;
-                                aworksheet.Cells[index, 2].Value = r[0].ToString();
-                                aworksheet.Cells[index, 3].Value = r[1].ToString();
-                                aworksheet.Cells[index, 4].Value = r[5].ToString();
-                                aworksheet.Cells[index, 5].Value = float.Parse(r[2].ToString());
-                                aworksheet.Cells[index, 6].Value = r[4].ToString();
-                                index += 1;
-                            }
+                            aworksheet.Cells[index, 1].Value = op.CODICE_PROFILO + "-" + op.N_OP;
+                            aworksheet.Cells[index, 2].Value = op.CODICE_PROFILO;
+                            aworksheet.Cells[index, 3].Value = op.N_OP.Replace("OP", "");
+                            aworksheet.Cells[index, 4].Value = op.DESCRIZIONE;
+                            aworksheet.Cells[index, 5].Value = "di Commessa";
+                            aworksheet.Cells[index, 6].Value = codiceCommessa;
+                            aworksheet.Cells[index, 7].Value = op.NOMEFILEDWG;
+                            aworksheet.Cells[index, 8].Value = op.NOMEFILEPDF;
 
                             index += 1;
                         }
-
-                        foreach (peC pe in pes)
-                        {
-                            foreach (DataRow r in pe.DIBA.Rows)
-                            {
-                                //aworksheet.Cells[index, 1].Value = 999;
-                                aworksheet.Cells[index, 2].Value = r[0].ToString();
-                                aworksheet.Cells[index, 3].Value = r[1].ToString();
-                                aworksheet.Cells[index, 4].Value = r[5].ToString();
-                                aworksheet.Cells[index, 5].Value = float.Parse(r[2].ToString());
-                                aworksheet.Cells[index, 6].Value = r[4].ToString();
-                                index += 1;
-                            }
-
-                            index += 1;
-                        }
-
-
-
-                        // OP
-                        // ? leggere info da cartiglio
-
-                        if (Directory.Exists(cartellaEmissione + "\\OP"))
-                        {
-                            string[] listOP = Directory.GetFiles(cartellaEmissione + "\\OP", "*.dwg");
-                            // devo instanziare autocad e processare
-
-                            List<opC> ops = Commands.CicloOP(listOP);
-                            index = 2;
-                            nameWorkBook = "OP";
-
-                            aworksheet = xlPackage.Workbook.Worksheets[nameWorkBook];
-                            
-                            foreach (opC op in ops)
-                            {
-                                aworksheet.Cells[index, 1].Value = op.CODICE_PROFILO + "-" + op.N_OP;
-                                aworksheet.Cells[index, 2].Value = op.CODICE_PROFILO;
-                                aworksheet.Cells[index, 3].Value = op.N_OP;
-                                aworksheet.Cells[index, 4].Value = op.DESCRIZIONE;
-                                aworksheet.Cells[index, 5].Value = "di Commessa";
-                                aworksheet.Cells[index, 6].Value = codiceCommessa;
-                                aworksheet.Cells[index, 7].Value = op.NOMEFILEDWG;
-                                aworksheet.Cells[index, 8].Value = op.NOMEFILEPDF;
-
-                                index += 1;
-                            }
-                        }
-
-
-                        // IMPEGNATI
-                        // ? leggere info da database
-                        Distribuzione d = new Distribuzione();
-
-                        Dictionary<string, dynamic> _results = new Dictionary<string, dynamic>();
-
-                        if (listaRadio.Checked)
-                            _results = d.customQueryLotID(codiciCE);
-                        else if(pianiRadio.Checked)
-                            _results = d.customQueryFasciePiani(codiciCE);
-
-                        var l = _results.OrderBy(key => key.Key);
-                        Dictionary<string, dynamic> results = l.ToDictionary((keyItem) => keyItem.Key, (valueItem) => valueItem.Value);
-
-                        index = 2;
-                        nameWorkBook = "Impegnati";
-                            
-                        aworksheet = xlPackage.Workbook.Worksheets[nameWorkBook];
-
-                        foreach (KeyValuePair<string, dynamic> data in results)
-                        {
-                            string lotto = data.Key;
-
-                            foreach (dynamic count in data.Value)
-                            {
-                                string nomeLotto = "";
-
-                                if (lotto.Contains("CB"))
-                                    nomeLotto = "Brise Soleil Units";
-                                if (lotto.Contains("CK"))
-                                    nomeLotto = "Corner Units";
-                                if (lotto.Contains("CC"))
-                                    nomeLotto = "Casing Units";
-
-                                aworksheet.Cells[index, 2].Value = codiceCommessa + "LIS" + lotto.ToString();
-                                aworksheet.Cells[index, 4].Value = nomeLotto;
-                                aworksheet.Cells[index, 3].Value = codiceCommessa + count.Value.ToString();
-                                aworksheet.Cells[index, 7].Value = count.Count;
-                                aworksheet.Cells[index, 8].Value = (rO.Checked ? "O" : "C");
-
-                                index += 1;
-                            }
-
-                            index += 1;
-                        }
-
                         xlPackage.Save();
                     }
                 }
@@ -479,21 +594,7 @@ namespace EdgeCheckDwg
             // GENERAZIONE PDF
             if (pdfCheckbox.Checked)
             {
-                if (Directory.Exists(cartellaEmissione + "\\CE"))
-                {
-                    string[] list = Directory.GetFiles(cartellaEmissione + "\\CE", "*.dwg");
-                    Commands.generoPDF(list);
-                }
-                if (Directory.Exists(cartellaEmissione + "\\PE"))
-                {
-                    string[] list = Directory.GetFiles(cartellaEmissione + "\\PE", "*.dwg");
-                    Commands.generoPDF(list);
-                }
-                if (Directory.Exists(cartellaEmissione + "\\OP"))
-                {
-                    string[] list = Directory.GetFiles(cartellaEmissione + "\\OP", "*.dwg");
-                    Commands.generoPDF(list);
-                }
+                Commands.generoPDF(list);
             }
 
             progressBar1.Value = 2;
@@ -501,7 +602,6 @@ namespace EdgeCheckDwg
             // PUBBLICAZIONE LOGICA DWG
             if (pubblicaCheckbox.Checked) 
             {
-
             }
 
             progressBar1.Value = 3;
@@ -511,7 +611,21 @@ namespace EdgeCheckDwg
         {
             cartellaEmissione = GenericFunction.choosePath();
 
-            labelChooseFolder.Text = Path.GetDirectoryName(cartellaEmissione);
+            labelChooseFolder.Text = cartellaEmissione;
+        }
+
+        private void arasExcelCheckbox_CheckedChanged(object sender, EventArgs e)
+        {
+            if (arasExcelCheckbox.Checked)
+            {
+                radioButton3.Visible = true;
+                radioButton1.Visible = true;
+            }
+            else
+            {
+                radioButton3.Visible = false;
+                radioButton1.Visible = false;
+            }
         }
     }
 }
