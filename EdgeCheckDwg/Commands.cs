@@ -616,7 +616,7 @@ namespace EdgeAutocadPlugins
             //    System.IO.File.Move(nf.Replace(".dwg", "_tmp.dwg"), nf);
             //}
         }
-        internal static List<opC> CicloOP(string[] listaFiles)
+        internal static List<opC> CicloOP(List<string> listaFiles)
         {
             List<opC> results = new List<opC>();
 
@@ -696,7 +696,7 @@ namespace EdgeAutocadPlugins
 
             return results;
         }
-        internal static List<ceC> CicloCE(string[] listaFiles)
+        internal static List<ceC> CicloCE(List<string> listaFiles)
         {
             List<ceC> results = new List<ceC>();
 
@@ -711,11 +711,6 @@ namespace EdgeAutocadPlugins
                     BlockTable bt = (BlockTable)tr.GetObject(db.BlockTableId, OpenMode.ForRead);
 
                     BlockTableRecord btrMS = (BlockTableRecord)tr.GetObject(bt[BlockTableRecord.PaperSpace], OpenMode.ForRead);
-
-                    //if (!btrMS.HasFields)
-                    //{
-                    //    btrMS = (BlockTableRecord)tr.GetObject(bt[BlockTableRecord.ModelSpace], OpenMode.ForRead);
-                    //}
 
                     // Cartiglio
                     ceC cartiglioCE = new ceC();
@@ -987,7 +982,7 @@ namespace EdgeAutocadPlugins
 
             return results;
         }
-        internal static List<peC> CicloPE(string[] listaFiles)
+        internal static List<peC> CicloPE(List<string> listaFiles)
         { 
             List<peC> results = new List<peC>();
 
@@ -1004,11 +999,10 @@ namespace EdgeAutocadPlugins
 
                     BlockTableRecord btrMS = (BlockTableRecord)tr.GetObject(bt[BlockTableRecord.PaperSpace], OpenMode.ForRead);
 
-                    //if (!btrMS.HasFields)
-                    //{
-                    //    btrMS = (BlockTableRecord)tr.GetObject(bt[BlockTableRecord.ModelSpace], OpenMode.ForRead);
-                    //}
-
+                    if (contaBlocchi(btrMS) == 0)
+                    {
+                        btrMS = (BlockTableRecord)tr.GetObject(bt[BlockTableRecord.ModelSpace], OpenMode.ForRead);
+                    }
                     // Cartiglio
                     peC cartiglioPE = new peC();
 
@@ -1127,28 +1121,28 @@ namespace EdgeAutocadPlugins
                                             cartiglioPE.MATERIALE = value;
                                         }
 
-                                        if (tag == "EMESSO2" && !string.IsNullOrEmpty(value)) // EMESSO
+                                        if (tag == "EMESSO2" && !string.IsNullOrEmpty(value) && value != "-") // EMESSO
                                         {
                                             cartiglioPE.EMESSO = value;
                                         }
-                                        else if (tag == "EMESSO1" && !string.IsNullOrEmpty(value) && string.IsNullOrEmpty(cartiglioPE.EMESSO)) // EMISSIONE RECENTE
+                                        else if (tag == "EMESSO1" && !string.IsNullOrEmpty(value) && string.IsNullOrEmpty(cartiglioPE.EMESSO) && value != "-") // EMISSIONE RECENTE
                                         {
                                             cartiglioPE.EMESSO = value;
                                         }
-                                        else if (tag == "EMESSO0" && string.IsNullOrEmpty(cartiglioPE.EMESSO)) // EMISSIONE RECENTE
+                                        else if (tag == "EMESSO0" && string.IsNullOrEmpty(cartiglioPE.EMESSO) && value != "-") // EMISSIONE RECENTE
                                         {
                                             cartiglioPE.EMESSO = value;
                                         }
 
-                                        if (tag == "DESCRIZIONE2" && !string.IsNullOrEmpty(value)) // EMISSIONE RECENTE
+                                        if (tag == "DESCRIZIONE2" && !string.IsNullOrEmpty(value) && value != "-") // EMISSIONE RECENTE
                                         {
                                             cartiglioPE.NOMEEMI = value;
                                         }
-                                        else if (tag == "DESCRIZIONE1" && !string.IsNullOrEmpty(value) && string.IsNullOrEmpty(cartiglioPE.NOMEEMI)) // EMISSIONE RECENTE
+                                        else if (tag == "DESCRIZIONE1" && !string.IsNullOrEmpty(value) && string.IsNullOrEmpty(cartiglioPE.NOMEEMI) && value != "-") // EMISSIONE RECENTE
                                         {
                                             cartiglioPE.NOMEEMI = value;
                                         }
-                                        else if (tag == "DESCRIZIONE0" && string.IsNullOrEmpty(cartiglioPE.NOMEEMI))
+                                        else if (tag == "DESCRIZIONE0" && string.IsNullOrEmpty(cartiglioPE.NOMEEMI) && value != "-")
                                         {
                                             cartiglioPE.NOMEEMI = value;
                                         }
@@ -1161,6 +1155,7 @@ namespace EdgeAutocadPlugins
                                 cartiglioPE.NOMEPDF = Path.GetFileName(nomefile).Split('.')[0].ToString() + ".pdf";
 
                                 results.Add(cartiglioPE);
+                                break;
                             }
                         }
                     }
@@ -1173,6 +1168,14 @@ namespace EdgeAutocadPlugins
                     dt.Columns.Add("nrow", Type.GetType("System.Int32"));
 
                     ObjectId idTable = FindTable(db, tr, "POS");
+                    bool bGeneric = false;
+
+                    if (idTable == ObjectId.Null) 
+                    {
+                        idTable = FindTable(db, tr, "RamPro");
+                        bGeneric = true;
+                    }
+
                     if (idTable != ObjectId.Null)
                     {
                         Table tbl = (Table)tr.GetObject(idTable, OpenMode.ForRead);
@@ -1190,7 +1193,8 @@ namespace EdgeAutocadPlugins
                         {
                             string szRowType = tbl.Cells[h, -1].Style.ToUpper();
 
-                            if (szRowType == @"CELLA POS")
+                            //if ((!bGeneric && szRowType == @"CELLA POS") || (bGeneric && (szRowType == @"_DATA" || szRowType == @"_HEADER") && h == 0))
+                            if ((szRowType == @"CELLA POS") || ((szRowType == @"_DATA" || szRowType == @"_HEADER") && h == 0))
                             {
                                 // analizza titoli colonne per terminare quali colonne
                                 // caricare e associale alla datarow corrente
@@ -1222,7 +1226,7 @@ namespace EdgeAutocadPlugins
                                     }
                                 }
                             }
-                            else if (szRowType == @"CELLA DATI")
+                            else if ((szRowType == @"CELLA DATI") || (szRowType == @"_DATA" && h != 0))
                             {
                                 DataRow dr_new = dt.NewRow();
                                 dr_new["nrow"] = h;
@@ -1236,7 +1240,10 @@ namespace EdgeAutocadPlugins
                                         dr_new[Indexes[j]] = StripFormatString(tbl.Cells[h, j].TextString);
                                     }
                                 }
-                                if (!string.IsNullOrEmpty(dr_new.ItemArray[0].ToString()))
+
+                                int n = tbl.Rows[h].Count();
+
+                                if (!string.IsNullOrEmpty(dr_new.ItemArray[0].ToString()) && n != 1)
                                 {
                                     dt.Rows.Add(dr_new);
                                 }
@@ -1351,6 +1358,19 @@ namespace EdgeAutocadPlugins
 
             return results;
         }
+
+        private static int contaBlocchi(BlockTableRecord btrMS)
+        {
+            int index = 0;
+
+            foreach (var a in btrMS)
+            {
+                index += 1;
+            }
+
+            return index;
+        }
+
         internal static List<peC> CicloCartigioGenerico(string[] listaFiles)
         {
             List<peC> results = new List<peC>();

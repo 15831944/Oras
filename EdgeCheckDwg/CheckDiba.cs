@@ -62,7 +62,7 @@ namespace EdgeAutocadPlugins
 
             // devo ciclare tutti i dwg, prendere diba e raccogliere codice ce
 
-            List<ceC> lcec = Commands.CicloCE(listaFiles.ToArray());
+            List<ceC> lcec = Commands.CicloCE(listaFiles);
 
             List<string> codiciCellula = lcec.Select(x => x.NOME).ToList();
 
